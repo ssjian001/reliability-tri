@@ -39,7 +39,7 @@ def build_inputs(rule, test_inputs):
 def test_template_cases(rid):
     rule = RULES[rid]
     for tc in rule["tests"]:
-        result = run_rule(rule, build_inputs(rule, tc["inputs"]), ENG)
+        result = run_rule(rule, build_inputs(rule, tc["inputs"]))
         expected = tc.get("expected_status", "PASS" if tc.get("expected_pass") else "FAIL")
         assert result["execution_status"] == expected, (tc["name"], result)
         if expected == "PASS" and "expected_outputs" in tc:
@@ -59,11 +59,11 @@ def test_state_machine_precedence():
     """复审 P0-3：DATA_GAP > NOT_APPLICABLE > SKIPPED_PRECONDITION > PASS/FAIL。"""
     rule = RULES["ELEC-RES-PWR-001"]
     # DATA_GAP：缺输入
-    r = run_rule(rule, {}, ENG)
+    r = run_rule(rule, {})
     assert r["execution_status"] == "DATA_GAP"
     # NOT_APPLICABLE > SKIPPED：applicability 由框架判定，此处验 SKIPPED 优先于 FAIL
     r = run_rule(rule, build_inputs(rule, {"power_dissipation": 0.04, "rated_power_70c": 0.1,
-        "local_ambient_temp": 85, "derating_ratio_limit": 0.5}), ENG)
+        "local_ambient_temp": 85, "derating_ratio_limit": 0.5}))
     assert r["execution_status"] == "SKIPPED_PRECONDITION"
 
 def test_conflict_unresolved_in_status_model():
@@ -72,47 +72,47 @@ def test_conflict_unresolved_in_status_model():
     assert STATUS_CONFLICT == "CONFLICT_UNRESOLVED"
 
 def test_string_numeric_and_invalid_value():
-    """复审 P0-C2R 回归：数字字符串合法；非数值 → ERROR(INVALID_VALUE) 而非裸抛。"""
+    """r5 回归（复审 P0-C2R）：数字字符串合法；非数值 → ERROR(INVALID_VALUE) 而非裸抛。"""
     rule = RULES["ELEC-RES-PWR-001"]
     inputs = build_inputs(rule, {"power_dissipation": 0.05, "rated_power_70c": 0.1,
                                  "local_ambient_temp": 55, "derating_ratio_limit": 0.5})
-    inputs["power_dissipation"].raw_value = "0.05"  # 数字字符串
+    inputs["power_dissipation"].raw_value = "0.05"
     inputs["power_dissipation"].decl_value = None
-    r = run_rule(rule, inputs, None)
+    r = run_rule(rule, inputs)
     assert r["execution_status"] == "PASS"
     inputs["power_dissipation"].raw_value = "55x"
-    r = run_rule(rule, inputs, None)
+    r = run_rule(rule, inputs)
     assert r["execution_status"] == "ERROR"
     assert any("INVALID_VALUE" in s for s in r["reasons"])
 
 def test_syntax_error_returns_error_not_raise():
-    """复审 P0-B1R 回归：DSL 语法错（AND 大写）→ ERROR，不裸抛。"""
+    """r5 回归（复审 P0-B1R）：DSL 语法错（AND 大写）→ ERROR，不裸抛。"""
     rule = dict(RULES["ELEC-RES-PWR-001"])
     rule["expression"] = "power_dissipation > 0 AND local_ambient_temp <= 70"
     inputs = build_inputs(rule, {"power_dissipation": 0.05, "rated_power_70c": 0.1,
                                  "local_ambient_temp": 55, "derating_ratio_limit": 0.5})
-    r = run_rule(rule, inputs, None)
+    r = run_rule(rule, inputs)
     assert r["execution_status"] == "ERROR"
     assert any("DSL" in s for s in r["reasons"])
 
 def test_digest_mismatch_returns_error():
-    """复审 C-3 回归：plugin digest 不匹配 → ERROR。"""
+    """r5 回归（复审 C-3）：plugin digest 不匹配 → ERROR。"""
     rule = dict(RULES["ELEC-ECAP-LIFE-003"])
     rule["plugin_ref"] = dict(rule["plugin_ref"], digest="sha256:wrong")
     inputs = build_inputs(rule, {"ripple_current_rms": 0.5, "esr_at_freq": 0.1,
                                  "thermal_resistance_ca": 40, "local_ambient_temp": 65,
                                  "rated_max_temp": 105, "rated_endurance_hours": 2000,
                                  "product_lifetime_target": 20000})
-    r = run_rule(rule, inputs, None)
+    r = run_rule(rule, inputs)
     assert r["execution_status"] == "ERROR"
     assert any("digest" in s for s in r["reasons"])
 
 def test_verdict_expr_ecap():
-    """复审 C-1 回归：verdict_expr DSL 判定（85℃ 用例 FAIL 正确）。"""
+    """r5 回归（复审 C-1）：verdict_expr DSL 判定（85℃ 寿命不足 → FAIL 正确）。"""
     rule = RULES["ELEC-ECAP-LIFE-003"]
     inputs = build_inputs(rule, {"ripple_current_rms": 0.5, "esr_at_freq": 0.1,
                                  "thermal_resistance_ca": 40, "local_ambient_temp": 85,
                                  "rated_max_temp": 105, "rated_endurance_hours": 2000,
                                  "product_lifetime_target": 20000})
-    r = run_rule(rule, inputs, None)
-    assert r["execution_status"] == "FAIL"  # 85℃ 寿命不足
+    r = run_rule(rule, inputs)
+    assert r["execution_status"] == "FAIL"

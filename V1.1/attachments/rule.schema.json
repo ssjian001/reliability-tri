@@ -428,12 +428,11 @@
     },
     "curve_eval": {
       "type": "object",
-      "description": "rule_type=lookup_curve 的执行配置（v1 定案：单族 1D 插值；expression 字段为人读描述不执行）。执行语义：按 table_columns 从曲线表取 x/y 列，log-log 插值得 limit_raw，乘 temp_derating_factor 与 safety_margin_ratio 后与目标值比较。",
+      "description": "rule_type=lookup_curve 的执行配置（v1 定案：单族 1D 插值；expression 字段为人读描述不执行）。执行语义：按 table_columns 从曲线表取 x/y 列，log-log 插值得 limit_raw，乘 temp_derating_factor 与 safety_margin_ratio 后与目标值比较。 temp_var 仅在温度折减（temp_derating_delta_ref_c 存在）时必填（V1.1.1-r3-delta 复核 P2）。",
       "required": [
         "interpolation",
         "table_columns",
-        "target_var",
-        "temp_var"
+        "target_var"
       ],
       "properties": {
         "interpolation": {
@@ -492,7 +491,31 @@
           "type": "string",
           "description": "温度折减的温度变量名（inputs 中声明，复审 P2：去名称推断）"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "temp_derating_delta_ref_c": {
+                "not": {
+                  "const": null
+                }
+              }
+            },
+            "required": [
+              "temp_derating_delta_ref_c"
+            ]
+          },
+          "then": {
+            "required": [
+              "interpolation",
+              "table_columns",
+              "target_var",
+              "temp_var"
+            ]
+          }
+        }
+      ]
     },
     "plugin_ref": {
       "type": "object",

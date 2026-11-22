@@ -27,8 +27,6 @@ def validate(expr: str, variables: list[str]) -> None:
     for node in ast.walk(tree):
         if not isinstance(node, ALLOWED_NODES):
             raise ValueError(f"DSL 违规节点: {type(node).__name__}")
-        if isinstance(node, ast.Call):
-            raise ValueError("禁止函数调用")
         if isinstance(node, ast.Name) and node.id not in variables and node.id != "null":
             raise ValueError(f"未知变量: {node.id}")
 

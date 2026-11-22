@@ -15,7 +15,7 @@ import math
 
 from .dsl import DSLEvaluator, validate as dsl_validate
 from .measured import MeasuredParam  # noqa: F401
-from .units import UnitEngine, UnitError
+from .units import UnitError
 
 EXEC_DECL = "declarative_expr"
 EXEC_CURVE = "lookup_curve"
@@ -71,7 +71,7 @@ def run_declarative(rule: dict, inputs: dict) -> dict:
     try:
         values, missing = _collect(rule, inputs)
     except UnitError as e:
-        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
+        return {"execution_status": STATUS_ERROR, "reasons": [str(e)], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     ev = DSLEvaluator(values)
@@ -139,7 +139,7 @@ def run_lookup_curve(rule: dict, inputs: dict) -> dict:
     try:
         values, missing = _collect(rule, inputs)
     except UnitError as e:
-        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
+        return {"execution_status": STATUS_ERROR, "reasons": [str(e)], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     table = values.get(table_name)
@@ -208,7 +208,7 @@ def run_script_plugin(rule: dict, inputs: dict) -> dict:
     try:
         values, missing = _collect(rule, inputs)
     except UnitError as e:
-        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
+        return {"execution_status": STATUS_ERROR, "reasons": [str(e)], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     ev = DSLEvaluator(values)
@@ -221,8 +221,6 @@ def run_script_plugin(rule: dict, inputs: dict) -> dict:
     params = {}
     for k, v in (ref.get("params") or {}).items():
         params[k] = v["value"] if isinstance(v, dict) and "value" in v else v
-    outputs_named = [o["name"] for o in rule.get("outputs_exposed", [])] if isinstance(
-        rule.get("outputs_exposed", [{}])[0] if rule.get("outputs_exposed") else None, dict) else rule.get("outputs_exposed", [])
     try:
         out = reg["func"](values, params)
     except Exception as e:
@@ -245,16 +243,15 @@ def run_script_plugin(rule: dict, inputs: dict) -> dict:
         reasons = reasons + [f"verdict_expr 判定未通过（{verdict_expr[:60]}）"]
     result = {"execution_status": (STATUS_PASS if verdict else STATUS_FAIL) if verdict is not None else STATUS_PASS,
               "reasons": reasons,
-              "info": {"outputs": out, "verdict": verdict, "advisory": verdict is None}}
+              "info": {"outputs": out, "verdict": verdict}}
     if verdict is None:
         result["info"]["advisory"] = True
     return result
 
 
-def run_rule(rule: dict, inputs: dict[str, MeasuredParam], engine: UnitEngine) -> dict:
+def run_rule(rule: dict, inputs: dict[str, MeasuredParam]) -> dict:
     """统一入口。inputs: 变量名 → MeasuredParam。出口做三轴可信检查（复审 C-3）。"""
     rt = rule.get("rule_type")
-    unit_dim = {i["name"]: ("table" if i.get("unit") == "table" else None) for i in rule.get("inputs", [])}
     if rt == EXEC_DECL:
         result = run_declarative(rule, inputs)
     elif rt == EXEC_CURVE:

@@ -182,3 +182,10 @@ G1 标记：**prototype → implementation baseline 候选**（待协作者对 e
 - **P0-B1R**：dsl.validate 的 ast.parse 包 try → ValueError（SyntaxError 转 ERROR）。
 - 残留 P2：02 温度双轨条目与统一口径条目统一（求值按声明口径）；curve_eval.temp_var 显式声明（schema/模板/引擎三处，去名称推断）；validate_assets 增 published 门禁复核（status=published → tests≥3 且 kind 覆盖三类）；.gitignore 去重。
 - 回归：新增 4 条崩溃路径用例（数字字符串、55x→ERROR(INVALID_VALUE)、AND→ERROR(DSL)、digest 不匹配→ERROR、verdict_expr 85℃ FAIL）——pytest 10 passed；validate_assets PASS。
+
+## 13. G1-r6（2026-11-22）：化妆级清零 + 测试恢复
+
+- 化妆项全部清理：run_rule 签名移除未使用的 engine 参数、outputs_named 死代码、advisory 重复赋值、ERROR 前缀重复（UnitError str 已含 code）、dsl.py ast.Call 不可达分支、unit_dim 无消费构建、.gitignore 去重。
+- schema temp_var 改条件必填（仅温度折减规则要求）。
+- 测试恢复与补齐：r4-r6 期间的 rebase/checkout 事故曾致测试文件混乱——从 683c06e 干净基线恢复并重补 4 条崩溃路径回归（数字字符串/55x→INVALID_VALUE/AND→DSL 违规/digest 不匹配/verdict_expr）。pytest **10 passed**。
+- validate_assets PASS（published 门禁复核已上线，模板全 draft 故空转——现状如实）。
