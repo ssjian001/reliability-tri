@@ -1,2 +1,6 @@
 # 打包产物（发布时重建）
 *.zip
+__pycache__/
+*.pyc
+__pycache__/
+*.pyc
