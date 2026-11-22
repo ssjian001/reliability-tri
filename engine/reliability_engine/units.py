@@ -97,7 +97,7 @@ class UnitEngine:
                 return Normalized(c + 273.15, "K", dim, "absolute")
             if u == "degF" and dim == "temperature_delta":
                 return Normalized(float(value) / 1.8, "K", dim, "delta")
-            return Normalized(float(value) * float(to_si), u if u == "K" else "K" if u.startswith("K") else u, dim, kind)
+            return Normalized(float(value) * float(to_si), "K", dim, kind)  # delta 归一 norm_unit 一律 K（复审 P2）
         to_si = meta["to_si"]
         return Normalized(float(value) * float(to_si), u, dim, meta.get("quantity_kind", "absolute"))
 

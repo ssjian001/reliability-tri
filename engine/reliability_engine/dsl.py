@@ -19,8 +19,11 @@ ALLOWED_NODES = (
 
 
 def validate(expr: str, variables: list[str]) -> None:
-    """静态校验：白名单节点 + 变量名 + 禁函数调用。违规抛 ValueError（→ ERROR）。"""
-    tree = ast.parse(expr, mode="eval")
+    """静态校验：白名单节点 + 变量名 + 禁函数调用。违规抛 ValueError（→ ERROR Finding，不裸抛）。"""
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(f"DSL 语法错误: {e.msg}") from None
     for node in ast.walk(tree):
         if not isinstance(node, ALLOWED_NODES):
             raise ValueError(f"DSL 违规节点: {type(node).__name__}")

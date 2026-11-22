@@ -397,6 +397,7 @@
             ],
             "enum": [
               "MISSING_INPUT",
+              "INVALID_VALUE",
               "DIV_BY_ZERO",
               "DIMENSION_MISMATCH",
               "UNKNOWN_UNIT",
@@ -431,7 +432,8 @@
       "required": [
         "interpolation",
         "table_columns",
-        "target_var"
+        "target_var",
+        "temp_var"
       ],
       "properties": {
         "interpolation": {
@@ -485,6 +487,10 @@
         "target_var": {
           "type": "string",
           "description": "判定目标变量名（inputs 中声明该单位量，如 peak_id）——与 limit 比较的值"
+        },
+        "temp_var": {
+          "type": "string",
+          "description": "温度折减的温度变量名（inputs 中声明，复审 P2：去名称推断）"
         }
       }
     },

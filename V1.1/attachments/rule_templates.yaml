@@ -82,6 +82,7 @@
     interpolation: log_log_linear
     table_columns: {x: pulse_width_ms, y: max_id}   # v1 单族 1D 插值；多族 2D（VDS 轴）留 V2
     target_var: peak_id                              # 与 limit 比较的目标变量（inputs 声明单位口径）
+    temp_var: case_temp                              # 温度折减的温度变量（显式声明，复审 P2）
     # 温度折减按绝对温差（delta, 单位 K）计算：delta_T = case_temp - 25；折减因子 = 1 - delta_T/125
     temp_derating_delta_ref_c: 25
     temp_derating_delta_max_c: 125

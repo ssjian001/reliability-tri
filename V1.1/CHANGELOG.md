@@ -174,3 +174,11 @@ pytest 6 passed + validate_assets PASS。
 ### 测试与校验
 pytest 6 passed（含 C-3 advisory 实测：C 级输入 → PASS + advisory 标记）；validate_assets.py PASS（碰撞 0 + 已知歧义 WARN×3）。
 G1 标记：**prototype → implementation baseline 候选**（待协作者对 e4a8073+r4 复核确认）。
+
+## 12. G1-r5（2026-11-22）：r4 追加复核修复轮（崩溃回归清零）
+
+来源：协作者对 G1-r4 的追加复核（确认 r4 三项契约漂移修复属实，但 C-2 修复方式引入数字字符串崩溃回归 + SyntaxError 裸抛与 CHANGELOG 声明不符）。全部按复审给出的三处一行级修法执行：
+- **P0-C2R**：decl() 数字字符串合法（float(raw_value) 先行——数据管线常态）；非数值抛 INVALID_VALUE（新错误码，替代 MISSING_INPUT 挪用）；_collect 统一包 UnitError → ERROR Finding（带 code），run_rule 不再裸抛。
+- **P0-B1R**：dsl.validate 的 ast.parse 包 try → ValueError（SyntaxError 转 ERROR）。
+- 残留 P2：02 温度双轨条目与统一口径条目统一（求值按声明口径）；curve_eval.temp_var 显式声明（schema/模板/引擎三处，去名称推断）；validate_assets 增 published 门禁复核（status=published → tests≥3 且 kind 覆盖三类）；.gitignore 去重。
+- 回归：新增 4 条崩溃路径用例（数字字符串、55x→ERROR(INVALID_VALUE)、AND→ERROR(DSL)、digest 不匹配→ERROR、verdict_expr 85℃ FAIL）——pytest 10 passed；validate_assets PASS。

@@ -53,9 +53,10 @@ class MeasuredParam:
         """返回声明单位口径的副本（Pint 仿射换算）。换算失败必须抛错——
         不得把 SI 归一值冒充声明口径值（复审 C-2：违反 02「不自动猜测」）。"""
         import dataclasses
-        raw = self.raw_value if isinstance(self.raw_value, (int, float)) else None
-        if raw is None:
-            raise UnitError("MISSING_INPUT", f"raw_value 非数值: {self.raw_value!r}")
+        try:
+            raw = float(self.raw_value)   # 数字字符串合法（数据管线常态，复审 P0-C2R）
+        except (TypeError, ValueError):
+            raise UnitError("INVALID_VALUE", f"raw_value 非数值: {self.raw_value!r}")
         src_sym = _PINT.get(self.raw_unit)
         dst_sym = _PINT.get(decl_unit)
         if src_sym is None or dst_sym is None:

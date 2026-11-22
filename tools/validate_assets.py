@@ -46,6 +46,21 @@ def main():
     print(f"PROMPT INJECTION ITEMS: {count} (target >= 20)")
     failed |= count < 20
 
+    # published 门禁复核（复审 r4 残留 P1-1）：status=published 的规则须 tests>=3 且 kind 覆盖三类
+    rules = yaml.safe_load((ATT / "rule_templates.yaml").read_text(encoding="utf-8"))
+    kinds = {"normal", "boundary", "invalid"}
+    for r in rules:
+        if r.get("status") != "published":
+            continue
+        tests = r.get("tests") or []
+        if len(tests) < 3:
+            print(f"PUBLISHED GATE FAIL: {r['rule_id']} tests<3")
+            failed = True
+        got_kinds = {t.get("kind") for t in tests}
+        if not kinds.issubset(got_kinds):
+            print(f"PUBLISHED GATE FAIL: {r['rule_id']} 缺 kind: {kinds - got_kinds}")
+            failed = True
+
     units = yaml.safe_load((ATT / "unit_dictionary.yaml").read_text(encoding="utf-8"))
     seen = {}
     collisions = []

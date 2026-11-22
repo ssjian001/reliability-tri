@@ -14,7 +14,7 @@ from __future__ import annotations
 import math
 
 from .dsl import DSLEvaluator, validate as dsl_validate
-from .measured import MeasuredParam, from_dict
+from .measured import MeasuredParam  # noqa: F401
 from .units import UnitEngine, UnitError
 
 EXEC_DECL = "declarative_expr"
@@ -54,8 +54,6 @@ def eval_preconditions(rule: dict, values: dict, evaluator: DSLEvaluator):
             raise ValueError(f"precondition DSL 违规: {e}")
         try:
             ok = evaluator.with_values(values).evaluate(expr, list(values))
-        except (ZeroDivisionError, UnitError) as e:
-            return STATUS_GAP, notes + [f"precondition 求值失败: {e}"]
         except Exception as e:
             return STATUS_GAP, notes + [f"precondition 求值失败: {e}"]
         if not ok:
@@ -70,7 +68,10 @@ def run_declarative(rule: dict, inputs: dict) -> dict:
         dsl_validate(expr, variables)
     except ValueError as e:
         return {"execution_status": STATUS_ERROR, "reasons": [f"DSL 违规: {e}"], "info": {}}
-    values, missing = _collect(rule, inputs)
+    try:
+        values, missing = _collect(rule, inputs)
+    except UnitError as e:
+        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     ev = DSLEvaluator(values)
@@ -125,7 +126,7 @@ def _interp_1d(table: list[dict], cols: dict, x_value: float) -> float:
     return pts[-1][1]
 
 
-def run_lookup_curve(rule: dict, inputs: dict, unit_dim: dict) -> dict:
+def run_lookup_curve(rule: dict, inputs: dict) -> dict:
     ce = rule["curve_eval"]
     cols = ce.get("table_columns") or {}
     if not cols.get("x") or not cols.get("y"):
@@ -135,7 +136,10 @@ def run_lookup_curve(rule: dict, inputs: dict, unit_dim: dict) -> dict:
     if table_name is None:
         return {"execution_status": STATUS_ERROR, "reasons": ["无 table 类型输入"], "info": {}}
     variables = [i["name"] for i in rule.get("inputs", [])]
-    values, missing = _collect(rule, inputs)
+    try:
+        values, missing = _collect(rule, inputs)
+    except UnitError as e:
+        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     table = values.get(table_name)
@@ -157,13 +161,14 @@ def run_lookup_curve(rule: dict, inputs: dict, unit_dim: dict) -> dict:
     # 温度折减因子：按 delta 语义计算（°C 差值 = K 差值）
     ref_c = ce.get("temp_derating_delta_ref_c")
     max_c = ce.get("temp_derating_delta_max_c")
+    t_var = ce.get("temp_var")
     factor = 1.0
     if ref_c is not None and max_c:
-        t_var = next((i["name"] for i in rule.get("inputs", []) if i.get("unit") in ("degC", "C")), None)
         if t_var is None:
-            t_var = next((i["name"] for i in rule.get("inputs", []) if "temp" in i.get("name", "")), None)
-        if t_var and t_var in numeric:
-            factor = 1 - (numeric[t_var] - ref_c) / max_c
+            return {"execution_status": STATUS_ERROR, "reasons": ["curve_eval.temp_var 未声明（温度折减需要温度变量）"], "info": {}}
+        if t_var not in numeric:
+            return {"execution_status": STATUS_ERROR, "reasons": [f"temp_var {t_var} 不在 inputs"], "info": {}}
+        factor = 1 - (numeric[t_var] - ref_c) / max_c
     margin = ce.get("safety_margin_ratio", 1.0)
     limit = limit_raw * factor * margin
     # 目标变量：curve_eval.target_var 显式声明（复审 B-2：消除启发式选择）
@@ -200,7 +205,10 @@ def run_script_plugin(rule: dict, inputs: dict) -> dict:
     if want_digest and reg["digest"] != want_digest:
         return {"execution_status": STATUS_ERROR,
                 "reasons": [f"插件 digest 不匹配: 注册 {reg['digest'][:16]}… vs 声明 {want_digest[:16]}…"], "info": {}}
-    values, missing = _collect(rule, inputs)
+    try:
+        values, missing = _collect(rule, inputs)
+    except UnitError as e:
+        return {"execution_status": STATUS_ERROR, "reasons": [f"{e.code}: {e}"], "info": {}}
     if missing:
         return {"execution_status": STATUS_GAP, "reasons": [f"缺失输入: {', '.join(missing)}"], "info": {}}
     ev = DSLEvaluator(values)
@@ -250,7 +258,7 @@ def run_rule(rule: dict, inputs: dict[str, MeasuredParam], engine: UnitEngine) -
     if rt == EXEC_DECL:
         result = run_declarative(rule, inputs)
     elif rt == EXEC_CURVE:
-        result = run_lookup_curve(rule, inputs, unit_dim)
+        result = run_lookup_curve(rule, inputs)
     elif rt == EXEC_PLUGIN:
         result = run_script_plugin(rule, inputs)
     else:
