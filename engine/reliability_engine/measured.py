@@ -50,18 +50,20 @@ class MeasuredParam:
     decl_value: float | None = None    # 声明单位下的数值（DSL/插件消费口径）
 
     def decl(self, decl_unit: str) -> "MeasuredParam":
-        """返回声明单位口径的副本（Pint 仿射换算；温度 °C 口径保持数值直觉）。"""
-        try:
-            q = _ureg.Quantity(float(self.raw_value) if not isinstance(self.raw_value, (int, float)) else self.raw_value,
-                               _PINT.get(self.raw_unit, self.raw_unit))
-            target = _PINT.get(decl_unit, decl_unit)
-            if target == "dimensionless":
-                v = float(self.raw_value)
-            else:
-                v = q.to(target).magnitude
-        except Exception:
-            v = float(self.norm_value)
+        """返回声明单位口径的副本（Pint 仿射换算）。换算失败必须抛错——
+        不得把 SI 归一值冒充声明口径值（复审 C-2：违反 02「不自动猜测」）。"""
         import dataclasses
+        raw = self.raw_value if isinstance(self.raw_value, (int, float)) else None
+        if raw is None:
+            raise UnitError("MISSING_INPUT", f"raw_value 非数值: {self.raw_value!r}")
+        src_sym = _PINT.get(self.raw_unit)
+        dst_sym = _PINT.get(decl_unit)
+        if src_sym is None or dst_sym is None:
+            raise UnitError("UNKNOWN_UNIT", f"单位不可解析: {self.raw_unit} → {decl_unit}")
+        try:
+            v = _ureg.Quantity(raw, src_sym).to(dst_sym).magnitude
+        except Exception as e:
+            raise UnitError("DIMENSION_MISMATCH", f"{self.raw_unit} → {decl_unit}: {e}")
         return dataclasses.replace(self, decl_unit=decl_unit, decl_value=v)
 
     def can_support_formal_pass(self) -> bool:

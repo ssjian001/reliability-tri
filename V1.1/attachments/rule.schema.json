@@ -139,7 +139,7 @@
     },
     "expression": {
       "type": "string",
-      "description": "受限 DSL 表达式，仅 rule_type=declarative_expr 必填。白名单：比较 > >= < <= == !=、逻辑 AND OR NOT、算术 + - * /、受限 IF。求值前 inputs 已按 unit_dictionary 归一为无量纲标量。变量名须在 inputs 中定义。lookup_curve 的表达式放 curve_eval.expression；script_plugin 不使用本字段。",
+      "description": "受限 DSL 表达式（Python 语法子集），仅 rule_type=declarative_expr 必填。白名单：比较 > >= < <= == !=、逻辑 and or not、算术 + - * /、三元条件 (值1 if 条件 else 值2)。求值口径：变量按 inputs 声明单位传入（decl），字面量同口径可比（02 §2.1）。变量名须在 inputs 中定义。lookup_curve/script_plugin 不使用本字段。",
       "maxLength": 500
     },
     "thresholds": {
@@ -427,10 +427,11 @@
     },
     "curve_eval": {
       "type": "object",
-      "description": "rule_type=lookup_curve 时的插值与包络配置",
+      "description": "rule_type=lookup_curve 的执行配置（v1 定案：单族 1D 插值；expression 字段为人读描述不执行）。执行语义：按 table_columns 从曲线表取 x/y 列，log-log 插值得 limit_raw，乘 temp_derating_factor 与 safety_margin_ratio 后与目标值比较。",
       "required": [
         "interpolation",
-        "expression"
+        "table_columns",
+        "target_var"
       ],
       "properties": {
         "interpolation": {
@@ -458,6 +459,32 @@
             "clamp"
           ],
           "description": "曲线边界外行为：报错或钳位；默认 error"
+        },
+        "table_columns": {
+          "type": "object",
+          "description": "曲线表列声明（消除列名硬编码，复审 B-2）",
+          "required": [
+            "x",
+            "y"
+          ],
+          "properties": {
+            "x": {
+              "type": "string",
+              "description": "横轴列名（如 pulse_width_ms）"
+            },
+            "y": {
+              "type": "string",
+              "description": "纵轴列名（如 max_id）"
+            },
+            "family": {
+              "type": "string",
+              "description": "V2 预留：多族分组列（如 peak_vds）"
+            }
+          }
+        },
+        "target_var": {
+          "type": "string",
+          "description": "判定目标变量名（inputs 中声明该单位量，如 peak_id）——与 limit 比较的值"
         }
       }
     },
@@ -483,6 +510,10 @@
         "digest": {
           "type": "string",
           "description": "插件内容哈希（sha256），跨版本重算对齐依据"
+        },
+        "verdict_expr": {
+          "type": "string",
+          "description": "判定表达式（DSL 语法，可引用 outputs_exposed 与 inputs 变量）：求值真=PASS。消除执行器硬编码判定语义（复审 C-1）"
         }
       }
     },

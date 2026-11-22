@@ -80,13 +80,13 @@
     - {expr: "soa_curve_table != null", on_fail: DATA_GAP}
   curve_eval:
     interpolation: log_log_linear
-    # 温度折减按绝对温差（delta, 单位 K）计算，避免 °C/K 仿射混淆：
-    # delta_T = case_temp - 25（°C 差值与 K 差值数值等价）；折减因子 = 1 - delta_T/125
+    table_columns: {x: pulse_width_ms, y: max_id}   # v1 单族 1D 插值；多族 2D（VDS 轴）留 V2
+    target_var: peak_id                              # 与 limit 比较的目标变量（inputs 声明单位口径）
+    # 温度折减按绝对温差（delta, 单位 K）计算：delta_T = case_temp - 25；折减因子 = 1 - delta_T/125
     temp_derating_delta_ref_c: 25
     temp_derating_delta_max_c: 125
-    temp_derating_factor: "1 - ((case_temp - 25) / 125)"
+    temp_derating_factor: "1 - ((case_temp - 25) / 125)"   # 人读描述（v1 引擎按 delta_ref/max_c 执行，本字段不执行）
     safety_margin_ratio: 0.80
-    expression: "peak_id <= lookup_max_id(soa_curve_table, pulse_width_ms, peak_vds) * temp_derating_factor * safety_margin_ratio"
     curve_out_of_bounds: error
   severity: critical
   rationale: 线性区启动时局部热点集中（Spirito 效应），易引发二次击穿导致 MOSFET 短路烧毁
@@ -145,10 +145,11 @@
   plugin_ref:
     module: "reliability_calc.capacitors.ecap_arrhenius_v1"
     entry_func: "evaluate_ecap_lifetime"
-    digest: "sha256:待入库时以插件包内容计算"
+    digest: "sha256:local-dev"
     params:
       doubling_temp_delta: {value: 10.0, unit: K, quantity_kind: delta, source: "器件手册专属参数优先；默认基线", approval: "待领域 Owner 确认"}
       life_safety_factor: {value: 1.2, unit: ratio, quantity_kind: absolute, source: "企业设计裕度规范（示意）", approval: "待可靠性负责人批准"}
+    verdict_expr: "predicted_life_hours >= product_lifetime_target * life_safety_factor"
   outputs_exposed:
     - {name: core_temp_est, unit: degC, type: number, quantity_kind: absolute}
     - {name: predicted_life_hours, unit: h, type: number, quantity_kind: absolute}

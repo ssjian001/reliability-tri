@@ -148,3 +148,29 @@ validate_assets.py：**PASS**（RULE ×3 PASS、BENCHMARK SAMPLE PASS、INJECTIO
 来源：协作者对 r3 文档层的追加复审（REVIEW/V1.1-ER-r3-delta-review.md，确认 P0-1 已清零、P0-2「只改定义没改样例」仍阻断 + 1 P1 + 4 P2）。
 **核心修复**：DSL 字面量单位口径定案（02 §2.1 + engine 实现双落地）——表达式字面量按所在 inputs 的声明单位口径解释（MeasuredParam.decl），模板常量 °C 直觉语义成立；02 §2.1 温度双轨重写（quantity_kind 显式）+ published ≥3 用例门禁（schema if/then）+ 错误码表扩全；01 promote 流转 approved→published、工日按 0.5-1 人日/条区间、README 版本行与容差口径同步、interface-spec batch_id 改 UUIDv7、unit_dictionary 移除单字母 C 别名（charge 冲突）、rule_templates 补 thermal_resistance_ca quantity_kind=delta 与前置边界 <=。
 pytest 6 passed + validate_assets PASS。
+
+## 11. G1-r4（2026-11-22）：引擎代码审核修复轮
+
+来源：协作者引擎代码审核（G1引擎与r3-delta代码审核.md，基线 e4a8073）——3 个 P0 契约漂移 + 4 项 P1 + P2 杂项，逐项修复。
+
+### P0（契约漂移）
+| 项 | 修复 |
+|---|---|
+| B-1 DSL 与规范两套语法（AND 大写裸抛 SyntaxError、IF 死代码） | **定案：DSL 采用 Python 语法**（and/or/not + 三元式），02 §2.1 与 rule.schema.json 白名单同步改写；dsl.py ALLOWED_NODES 含 IfExp、Call 一律拒绝；declarative 求值异常全捕获 → ERROR（不再裸抛 SyntaxError） |
+| B-2 lookup_curve 只做 1D、curve_eval.expression 不被读取（静默漂移） | **定案：v1 单族 1D 插值**——curve_eval 增 table_columns {x,y}（列名参数化，去硬编码）与 target_var（显式目标变量，去启发式选择）；curve_eval.expression 明确为「人读描述，v1 不执行」（02 §2.2/schema 同步）；多族 2D 留 V2 |
+| B-3 §2.1 两口径并存 | 一句话统一：「入库时归一存档（norm_value），求值时按声明口径换算（decl）」 |
+
+### P1
+| 项 | 修复 |
+|---|---|
+| C-1 script_plugin 判定硬编码 ecap 语义 | plugin_ref 增 verdict_expr（DSL 求值，命名空间=inputs+outputs+params）；模板 3 补 verdict_expr |
+| C-2 decl() 静默回退 | 换算失败改抛 UnitError（UNKNOWN_UNIT/DIMENSION_MISMATCH），不再拿 norm_value 冒充 |
+| C-3 三轴门禁与 digest 未接线 | run_rule 出口检查全部 inputs 三轴（不达标→advisory 标记，PASS 附「仅建议性」）；register_plugin 强制 digest、run_script_plugin 校验 digest 匹配 |
+| C-4 依赖未声明 | engine/requirements.txt（PyYAML/jsonschema/pint/simpleeval/pytest） |
+
+### D（P2）
+死代码清理（_ExprEnv/未用 import）；precondition DSL 违规→ERROR 分流；normalize degC_delta norm_unit 归 K；表变量判定去名字启发式（按 unit=='table'）；.gitignore 去重；schema 尾换行。
+
+### 测试与校验
+pytest 6 passed（含 C-3 advisory 实测：C 级输入 → PASS + advisory 标记）；validate_assets.py PASS（碰撞 0 + 已知歧义 WARN×3）。
+G1 标记：**prototype → implementation baseline 候选**（待协作者对 e4a8073+r4 复核确认）。
