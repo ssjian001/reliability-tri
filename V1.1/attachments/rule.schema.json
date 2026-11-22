@@ -11,7 +11,6 @@
     "intent",
     "applicability",
     "inputs",
-    "expression",
     "severity",
     "rationale",
     "recommendation",
@@ -86,14 +85,57 @@
           },
           "source": {
             "type": "string",
-            "description": "来源：bom / datasheet / operating_profile / manual_input"
+            "description": "输入来源受控枚举",
+            "enum": [
+              "ComponentStress",
+              "Component.rated_params",
+              "Component.datasheet_curves",
+              "OperatingProfile",
+              "Thresholds",
+              "Manual",
+              "Artifact"
+            ]
+          },
+          "quantity_kind": {
+            "type": "string",
+            "enum": [
+              "absolute",
+              "delta"
+            ],
+            "description": "量性质：absolute=绝对量（温度归一到 K 带偏移），delta=差量（K 不带偏移）；仅温度类需要。默认 absolute"
+          },
+          "type": {
+            "type": "string",
+            "description": "值类型：number/string/boolean/enum/table（复审 P2-3：02 要求 inputs 含类型）"
           }
         }
       }
     },
     "preconditions": {
-      "type": "string",
-      "description": "前置条件（人读）；机器可判定条件写入 applicability"
+      "type": "array",
+      "description": "前置条件数组：只读 inputs 变量的受限表达式；不满足时规则状态为 SKIPPED_PRECONDITION（非失败）。人读补充说明放 notes 字段。",
+      "items": {
+        "type": "object",
+        "required": [
+          "expr"
+        ],
+        "properties": {
+          "expr": {
+            "type": "string",
+            "description": "受限 DSL（同 expression 白名单），只读 inputs 变量"
+          },
+          "on_fail": {
+            "type": "string",
+            "enum": [
+              "SKIPPED_PRECONDITION",
+              "NOT_APPLICABLE",
+              "DATA_GAP"
+            ],
+            "default": "SKIPPED_PRECONDITION",
+            "description": "不满足时的规则状态"
+          }
+        }
+      }
     },
     "expression": {
       "type": "string",
@@ -101,28 +143,77 @@
       "maxLength": 500
     },
     "thresholds": {
-      "type": "object",
-      "description": "阈值及来源；数值必须来自 A/B 级证据",
-      "additionalProperties": {
-        "type": "object",
-        "required": [
-          "value",
-          "unit",
-          "source_ref"
-        ],
-        "properties": {
-          "value": {
-            "type": "number"
-          },
-          "unit": {
-            "type": "string"
-          },
-          "source_ref": {
-            "type": "string",
-            "description": "指向 evidence 项的 evidence_id 或标准条款"
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "单值阈值：键=阈值名，值={value,unit,source_ref}",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "value",
+              "unit",
+              "source_ref"
+            ],
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "source_ref": {
+                "type": "string"
+              },
+              "applicability_note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "分档阈值组：键=阈值名，值含 variants",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "variants",
+              "source_ref"
+            ],
+            "properties": {
+              "variants": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "condition",
+                    "value",
+                    "unit"
+                  ],
+                  "properties": {
+                    "condition": {
+                      "type": "string",
+                      "description": "适用条件，如 local_ambient_temp<=70 或 profile=high_reliability"
+                    },
+                    "value": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "source_ref": {
+                "type": "string"
+              },
+              "applicability_note": {
+                "type": "string"
+              }
+            }
           }
         }
-      }
+      ]
     },
     "severity": {
       "type": "string",
@@ -249,14 +340,13 @@
     },
     "tests": {
       "type": "array",
-      "minItems": 3,
-      "description": "单测用例：至少正常、边界（阈值相等）、异常输入三类（02 §2.1）",
+      "minItems": 1,
+      "description": "单测用例。发布（published）前须 ≥3 条且 kind 覆盖 normal/boundary/invalid（02 §2.1）；本 schema 仅要求 ≥1 条以便草稿期校验。",
       "items": {
         "type": "object",
         "required": [
           "name",
-          "inputs",
-          "expected"
+          "inputs"
         ],
         "properties": {
           "name": {
@@ -285,7 +375,9 @@
               "PASS",
               "FAIL",
               "SKIPPED_PRECONDITION",
+              "NOT_APPLICABLE",
               "DATA_GAP",
+              "CONFLICT_UNRESOLVED",
               "ERROR"
             ],
             "description": "期望执行状态；SKIPPED_PRECONDITION=前置条件不满足跳过"
@@ -306,6 +398,7 @@
               "DIMENSION_MISMATCH",
               "UNKNOWN_UNIT",
               "TEMPERATURE_SCALE_AMBIGUOUS",
+              "CONFLICT_UNRESOLVED",
               null
             ]
           }
@@ -382,15 +475,53 @@
         "params": {
           "type": "object",
           "description": "插件固定参数（如寿命倍增温度、安全系数）；来源须为 A/B 级证据或标注默认基线"
+        },
+        "digest": {
+          "type": "string",
+          "description": "插件内容哈希（sha256），跨版本重算对齐依据"
         }
       }
     },
     "outputs_exposed": {
       "type": "array",
-      "description": "script_plugin 暴露给报告/后续比较的输出变量（如 core_temp_est、predicted_life_hours）",
+      "description": "script_plugin 暴露给报告/后续比较的输出变量，逐个带单位与量性质（02 §2.2；复审 P1-7）",
       "items": {
-        "type": "string"
+        "type": "object",
+        "required": [
+          "name",
+          "unit",
+          "type"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "description": "须在 unit_dictionary.yaml 中可归一"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "number",
+              "string",
+              "boolean"
+            ]
+          },
+          "quantity_kind": {
+            "type": "string",
+            "enum": [
+              "absolute",
+              "delta"
+            ],
+            "description": "温度类必填"
+          }
+        }
       }
+    },
+    "notes": {
+      "type": "string",
+      "description": "人读补充说明（preconditions 数组化后的人读语义）"
     }
   },
   "allOf": [

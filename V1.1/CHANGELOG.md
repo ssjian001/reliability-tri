@@ -69,3 +69,53 @@
 
 1. lookup_curve/script_plugin 与 01 §3.1「禁函数调用」的表面冲突：禁令收窄为仅约束 declarative_expr 的 expression；三类 rule_type 各走专属执行器（DSL 求值器 / 曲线插值引擎 / 受控白名单插件），插件注册表版本化+审计，已在 01 §3.1 与 02 §2.2 双向写死。
 2. rule.schema.json 与 02 正文的机读/人读分工：不一致时以 JSON Schema 为准（02 §2 已声明）。
+
+## 7. V1.1-ER-r3（2026-11-22）：复审修复轮
+
+来源：协作者对 fcec5ac 的机读级复审（jsonschema 实测 39 errors + 逐节评审，全文存档 docs/review/irr-review-v1.0.md）。**39 errors 复现确认（15/12/12 分布一致）**，逐项修复如下。
+
+### P0（阻断项，全部清零）
+| 项 | 修复结果 |
+|---|---|
+| P0-1 模板与 Schema 矛盾（39 errors） | **0 errors 实测通过**（jsonschema Draft202012）。schema 侧：expression 移出顶层 required（allOf 按 rule_type 条件必填）、tests.required 收窄为 name+inputs、preconditions 数组化 [{expr,on_fail}]、thresholds 支持 variants、error_code/expected_status 增 CONFLICT_UNRESOLVED、inputs.source 受控枚举+quantity_kind+type；模板侧：日期加引号、status=published、evidence 补全、tests 补齐 ≥3 且 kind 覆盖、thresholds 改 variants |
+| P0-2 温度归一矛盾 | **已完成**：unit_dictionary 温度双轨（temperature_abs→K 带偏移 / temperature_delta→K 差值）；inputs/outputs/插件参数全部带 quantity_kind；模板 2 折减因子改 delta 语义（25→1.00、85→0.52、150→0.00 手算复核） |
+| P0-3 前置条件无机器语义 | **已完成**：preconditions 数组化 [{expr, on_fail}]（expr 只读 inputs，白名单同 expression）；01 §7.1 状态机四态优先级定案（DATA_GAP > NOT_APPLICABLE > SKIPPED_PRECONDITION > CONFLICT_UNRESOLVED > PASS/FAIL）+ 每态负例要求 |
+| P0-4 CONFLICT_UNRESOLVED 无落点 | **已完成**：Finding 增 execution_status（七态含 CONFLICT_UNRESOLVED）与 conflict{sources,resolution,adjudicator}；error_code/expected_status 同步加码；T19 冲突裁决用例 |
+
+### P1（9 项）
+| 项 | 修复结果 |
+|---|---|
+| P1-1 证据等级三轴拆分 | MeasuredParam.confidence_level → source_level/extraction_status/applicability_status 三轴；正式 PASS 三轴同时达标（C 级不再静默 PASS） |
+| P1-2 可复现口径+字段 | 同构建逐字节/跨版本容差双口径；AnalysisRun 落 engine_version/unit_dict_version/prompt_version；plugin_ref 增 digest |
+| P1-3 容差矛盾 | 改为 |Δ| ≤ max(abs_floor, rel×ref)；Arrhenius 寿命 rel 放宽 0.01 并标模型不确定度 |
+| P1-4 矩阵有洞 | 补 FR01/FR11/FR12；修 FR09/T16 错误映射；新增 T17 确定性/T18 覆盖率/T19 冲突裁决 |
+| P1-5 0% 漏报口径 | 定为发布门禁条件（非统计结论）；披露置信区间；每域 agreed ≥30 方可计分；disputed 占比披露 |
+| P1-6 注入防护输出侧 | 报告渲染禁用远程资源、出站链接域名白名单+审计；语料扩至 28 条 11 形态（output_markdown_remote_resource/output_link_exfiltration/agentic_tool_call/encoding_obfuscation/multi_turn） |
+| P1-7 插件无单位 | plugin_ref.params 带 unit+quantity_kind；outputs_exposed 逐项 {name,unit,type,quantity_kind} |
+| P1-8 状态词漂移 | 统一以 schema 为准（published）；01/02/模板全部对齐 |
+| P1-9 cycles 混装 | cycles 独立维度；lifetime_hours 独立维度；互不转换 |
+
+### P2（10 项）
+| 项 | 修复结果 |
+|---|---|
+| P2-1 Rule 模型漂移 | 01 §5.3 Rule 字段全量对齐 schema（preconditions 数组/tests/curve_eval/plugin_ref/outputs_exposed） |
+| P2-2 §5.0 自违反 | calculated_margin/vibration_level 全部 MeasuredParam 化 |
+| P2-3 章节顺序+inputs.type | 02 §2.1 调至 §2.2 前；schema inputs 增 type 字段 |
+| P2-4 S≥8 映射 | dfmea_scoring_template 增十分制映射（S=9-10↔H、5-8↔M、1-4↔L；AP 制以 AP=Critical 替代） |
+| P2-5 组合口径 | 1500 为 V1 基线负载；2000 行硬上限=6000 组合属容量扩展（§5A 已注明） |
+| P2-6 领域数 | 13 类修正（8 技术域+5 对抗域）；补规则编写/双审工作量 10-15 人日 |
+| P2-7 benchmark 两洞 | resolved 须有非空 adjudication；expected_findings 增 rule_version_at_label 版本化匹配键 |
+| P2-8 ReliaTrack 依据 | interface-spec 增代码实查声明与升级触发条件；batch_id 建议改 UUIDv7（登记待办）；CSV BOM 适配待实现时补 |
+| P2-9 仓库工程化 | LICENSE（CC BY 4.0）；README 已列附件；docs/legacy/ 三件套 V1.0 原件 + docs/review/ 复审意见全文归档（追溯断链修复）；prompt_injection $schema 改 schema_version |
+| P2-10 措辞张力 | 02 §3.1 补「标准强制更严时从标准」 |
+
+### r3 CI 门槛状态（复审 §5 建议）
+| 门槛 | 状态 |
+|---|---|
+| 1. 三模板过 schema 0 error | ✅ 0 errors 实测 |
+| 2. 单位字典覆盖模板全部单位 | ✅ ratio/table/degC_per_W/dimensionless 已补；负例（C/H 歧义/cycles/温度混用）已在 normalization_rules 声明，引擎实现时补用例 |
+| 3. 温度三用例手算一致 | ✅ 1.00/0.52/0.00 手算值写入模板 notes；absolute/delta 语义已分离 |
+| 4. 状态机四负例 | ✅ 状态机定案 + tests 含 SKIPPED_PRECONDITION/NOT_APPLICABLE/DATA_GAP/CONFLICT_UNRESOLVED 各例 |
+| 5. tests ≥3 且 kind 覆盖 | ✅ 三模板各 3 条（normal/boundary/invalid） |
+| 6. 矩阵补 FR01/FR11/FR12 + T17/T18/T19 | ✅ |
+| 7. README 附件清单/LICENSE/追溯链接 | ✅ README 已列；LICENSE=CC BY 4.0；docs/legacy + docs/review 归档 |

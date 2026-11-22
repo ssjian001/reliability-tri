@@ -1,123 +1,148 @@
-# AI电子硬件可靠性分析系统 - 单位字典 V1.0
-# 规则引擎 Unit Normalization 依据（02 §2.1；01 §3.1）
-# 结构：dimension → canonical_unit → aliases[]（识别用）→ to_si（归一到 SI 的乘法因子；温度类为仿射，单独标注）
-# 维度检查：比较双方 dimension 不同 → DIMENSION_MISMATCH 错误
+# AI电子硬件可靠性分析系统 - 单位字典 V1.1-ER-r3
+# 规则引擎 Unit Normalization 依据（02 §2.1；01 §3.1）。
+# r3 修复（复审 P0-2/P0-1⑨/P1-9）：温度引入 quantity_kind（absolute=K 带 273.15 偏移 / delta=K 差值），
+#   表达式只读取已归一值；补 ratio/table/degC_per_W/dimensionless；cycles 独立维度。
+# 结构：dimension → canonical → units{unit: {aliases[], to_si, quantity_kind}}
+#   - to_si 为乘法因子；温度 absolute 类为仿射（offset 单列），delta 类纯乘法。
+#   - 维度检查：比较双方 dimension 不同 → DIMENSION_MISMATCH。
 
 dimensions:
   voltage:
     canonical: V
     units:
-      V:   {aliases: [volt, volts, 伏特, V], to_si: 1}
-      mV:  {aliases: [millivolt, 毫伏], to_si: 1e-3}
-      kV:  {aliases: [kilovolt, 千伏], to_si: 1e3}
-      uV:  {aliases: [µV, microvolt], to_si: 1e-6}
+      V:   {aliases: [volt, volts, 伏特, V], to_si: 1, quantity_kind: absolute}
+      mV:  {aliases: [millivolt, 毫伏], to_si: 0.001, quantity_kind: absolute}
+      uV:  {aliases: [µV, microvolt], to_si: 0.000001, quantity_kind: absolute}
+      kV:  {aliases: [kilovolt, 千伏], to_si: 1000, quantity_kind: absolute}
   current:
     canonical: A
     units:
-      A:   {aliases: [ampere, amps, 安培, 安], to_si: 1}
-      mA:  {aliases: [milliamp, 毫安], to_si: 1e-3}
-      uA:  {aliases: [µA, microamp], to_si: 1e-6}
-      kA:  {aliases: [kiloamp], to_si: 1e3}
+      A:   {aliases: [ampere, amps, 安培, 安], to_si: 1, quantity_kind: absolute}
+      mA:  {aliases: [milliamp, 毫安], to_si: 0.001, quantity_kind: absolute}
+      uA:  {aliases: [µA, microamp], to_si: 0.000001, quantity_kind: absolute}
+      kA:  {aliases: [kiloamp], to_si: 1000, quantity_kind: absolute}
   power:
     canonical: W
     units:
-      W:   {aliases: [watt, 瓦特, 瓦], to_si: 1}
-      mW:  {aliases: [milliwatt, 毫瓦], to_si: 1e-3}
-      kW:  {aliases: [kilowatt, 千瓦], to_si: 1e3}
-      uW:  {aliases: [µW, microwatt], to_si: 1e-6}
+      W:   {aliases: [watt, 瓦特, 瓦], to_si: 1, quantity_kind: absolute}
+      mW:  {aliases: [milliwatt, 毫瓦], to_si: 0.001, quantity_kind: absolute}
+      kW:  {aliases: [kilowatt, 千瓦], to_si: 1000, quantity_kind: absolute}
+      uW:  {aliases: [µW, microwatt], to_si: 0.000001, quantity_kind: absolute}
   capacitance:
     canonical: F
     units:
-      F:   {aliases: [farad, 法拉], to_si: 1}
-      mF:  {aliases: [millifarad], to_si: 1e-3}
-      uF:  {aliases: [µF, microfarad, uf, 微法], to_si: 1e-6}
-      nF:  {aliases: [nanofarad, nf], to_si: 1e-9}
-      pF:  {aliases: [picofarad, pf, 皮法], to_si: 1e-12}
+      F:   {aliases: [farad, 法拉], to_si: 1, quantity_kind: absolute}
+      mF:  {aliases: [millifarad], to_si: 0.001, quantity_kind: absolute}
+      uF:  {aliases: [µF, microfarad, uf, 微法], to_si: 0.000001, quantity_kind: absolute}
+      nF:  {aliases: [nanofarad, nf], to_si: 1e-9, quantity_kind: absolute}
+      pF:  {aliases: [picofarad, pf, 皮法], to_si: 1e-12, quantity_kind: absolute}
   resistance:
-    canonical: Ohm
+    canonical: ohm
     units:
-      Ohm:  {aliases: [ohm, Ω, 欧姆, 欧], to_si: 1}
-      mOhm: {aliases: [mΩ, milliohm, 毫欧], to_si: 1e-3}
-      kOhm: {aliases: [kΩ, kiloohm, kilohm, 千欧], to_si: 1e3}
-      MOhm: {aliases: [MΩ, megaohm, 兆欧], to_si: 1e6}
+      ohm:  {aliases: [ohm, Ω, 欧姆, 欧], to_si: 1, quantity_kind: absolute}
+      mOhm: {aliases: [mΩ, milliohm, 毫欧], to_si: 0.001, quantity_kind: absolute}
+      kOhm: {aliases: [kΩ, kiloohm, 千欧], to_si: 1000, quantity_kind: absolute}
+      MOhm: {aliases: [MΩ, megaohm, 兆欧], to_si: 1000000, quantity_kind: absolute}
   inductance:
     canonical: H
     units:
-      H:   {aliases: [henry, 亨利], to_si: 1}
-      mH:  {aliases: [millihenry], to_si: 1e-3}
-      uH:  {aliases: [µH, microhenry], to_si: 1e-6}
-  temperature:
-    canonical: degC
-    affine_note: >-
-      摄氏与开尔文为仿射换算（K = degC + 273.15），不适用乘法因子。
-      规则涉及温差（ΔT）时使用 K 或 degC 等价；涉及绝对温度（Arrhenius、结温计算）
-      必须显式声明使用 K，否则引擎拒绝并报 TEMPERATURE_SCALE_AMBIGUOUS。
+      H:   {aliases: [henry, 亨利], to_si: 1, quantity_kind: absolute}
+      mH:  {aliases: [millihenry], to_si: 0.001, quantity_kind: absolute}
+      uH:  {aliases: [µH, microhenry], to_si: 0.000001, quantity_kind: absolute}
+  temperature_abs:            # 绝对温度：归一到 K（带 273.15 偏移）
+    canonical: K
+    offset_to_si: 273.15      # K = degC + 273.15
     units:
-      degC: {aliases: [°C, ℃, celsius, 摄氏度, C], to_si: affine(+273.15→K)}
-      K:    {aliases: [kelvin, 开尔文], to_si: 1}
-      degF: {aliases: [°F, fahrenheit, 华氏度], to_si: affine((x-32)/1.8→degC)}
+      K:    {aliases: [kelvin, 开尔文], to_si: 1, quantity_kind: absolute}
+      degC: {aliases: [°C, ℃, celsius, 摄氏度, C], to_si: affine(+273.15), quantity_kind: absolute}
+      degF: {aliases: [°F, fahrenheit, 华氏度], to_si: affine((x-32)/1.8→degC→K), quantity_kind: absolute}
+  temperature_delta:          # 温差：归一到 K 差值（无偏移；°C 差值与 K 差值数值等价）
+    canonical: K
+    units:
+      K:    {aliases: [kelvin_delta, ΔK], to_si: 1, quantity_kind: delta}
+      degC_delta: {aliases: [°C_delta, ℃_delta, Δ°C], to_si: 1, quantity_kind: delta}
+      degF_delta: {aliases: [°F_delta], to_si: 1.8, quantity_kind: delta}
+  temperature_gradient:       # 温度梯度：degC/W（热阻类）
+    canonical: K_per_W
+    units:
+      degC_per_W: {aliases: [°C/W, ℃/W, K/W, kelvin_per_watt], to_si: 1, quantity_kind: delta}
   frequency:
     canonical: Hz
     units:
-      Hz:  {aliases: [hertz, 赫兹], to_si: 1}
-      kHz: {aliases: [kilohertz], to_si: 1e3}
-      MHz: {aliases: [megahertz], to_si: 1e6}
-      GHz: {aliases: [gigahertz], to_si: 1e9}
+      Hz:  {aliases: [hertz, 赫兹], to_si: 1, quantity_kind: absolute}
+      kHz: {aliases: [kilohertz], to_si: 1000, quantity_kind: absolute}
+      MHz: {aliases: [megahertz], to_si: 1000000, quantity_kind: absolute}
+      GHz: {aliases: [gigahertz], to_si: 1000000000, quantity_kind: absolute}
   time:
     canonical: s
     units:
-      s:   {aliases: [sec, second, 秒], to_si: 1}
-      ms:  {aliases: [millisecond, 毫秒], to_si: 1e-3}
-      us:  {aliases: [µs, microsecond, 微秒], to_si: 1e-6}
-      h:   {aliases: [hour, hr, 小时], to_si: 3600}
-      min: {aliases: [minute, 分钟], to_si: 60}
-  lifetime:
+      s:   {aliases: [sec, second, 秒], to_si: 1, quantity_kind: absolute}
+      ms:  {aliases: [millisecond, 毫秒], to_si: 0.001, quantity_kind: absolute}
+      us:  {aliases: [µs, microsecond, 微秒], to_si: 0.000001, quantity_kind: absolute}
+      min: {aliases: [minute, 分钟], to_si: 60, quantity_kind: absolute}
+      h:   {aliases: [hour, hr, 小时], to_si: 3600, quantity_kind: absolute}
+  lifetime_hours:             # 寿命：独立维度（小时基）——不与 cycles 互换（复审 P1-9）
     canonical: h
-    note: 寿命/循环以小时归一；循环次数类输入须改用 dimensionless 或 cycles 并在规则中显式声明判据类型
     units:
-      h:      {aliases: [hours, 小时], to_si: 3600}
-      cycles: {aliases: [次, 循环, cycle], to_si: 1, dimension: cycles}
+      h: {aliases: [hours, 小时, 寿命小时], to_si: 3600, quantity_kind: absolute}
+  cycles:                     # 循环次数：独立维度（复审 P1-9）
+    canonical: cycles
+    units:
+      cycles: {aliases: [次, 循环, cycle], to_si: 1, quantity_kind: absolute}
   energy:
     canonical: J
     units:
-      J:   {aliases: [joule, 焦耳], to_si: 1}
-      mJ:  {aliases: [millijoule], to_si: 1e-3}
-      Wh:  {aliases: [watthour, 瓦时], to_si: 3600}
-      mWh: {aliases: [milliwatthour], to_si: 3.6}
-  capacity_charge:
+      J:   {aliases: [joule, 焦耳], to_si: 1, quantity_kind: absolute}
+      mJ:  {aliases: [millijoule], to_si: 0.001, quantity_kind: absolute}
+      Wh:  {aliases: [watthour, 瓦时], to_si: 3600, quantity_kind: absolute}
+      mWh: {aliases: [milliwatthour], to_si: 3.6, quantity_kind: absolute}
+  charge:
     canonical: C
-    note: 电池容量常用 mAh（电荷量），独立于 capacitance 维度
+    note: 电池容量 mAh/Ah（电荷量），独立于 capacitance 维度
     units:
-      mAh: {aliases: [mah, 毫安时], to_si: 3.6}
-      Ah:  {aliases: [ah, 安时], to_si: 3600}
+      mAh: {aliases: [mah, 毫安时], to_si: 3.6, quantity_kind: absolute}
+      Ah:  {aliases: [ah, 安时], to_si: 3600, quantity_kind: absolute}
   mass:
     canonical: kg
     units:
-      kg:  {aliases: [kilogram, 千克], to_si: 1}
-      g:   {aliases: [gram, 克], to_si: 1e-3}
-      mg:  {aliases: [milligram, 毫克], to_si: 1e-6}
+      kg:  {aliases: [kilogram, 千克], to_si: 1, quantity_kind: absolute}
+      g:   {aliases: [gram, 克], to_si: 0.001, quantity_kind: absolute}
+      mg:  {aliases: [milligram, 毫克], to_si: 0.000001, quantity_kind: absolute}
   length:
     canonical: m
     units:
-      m:   {aliases: [meter, 米], to_si: 1}
-      mm:  {aliases: [millimeter, 毫米], to_si: 1e-3}
-      um:  {aliases: [µm, micrometer, 微米], to_si: 1e-6}
-      mil: {aliases: [mils, 密耳], to_si: 2.54e-5}
+      m:   {aliases: [meter, 米], to_si: 1, quantity_kind: absolute}
+      mm:  {aliases: [millimeter, 毫米], to_si: 0.001, quantity_kind: absolute}
+      um:  {aliases: [µm, micrometer, 微米], to_si: 0.000001, quantity_kind: absolute}
+      mil: {aliases: [mils, 密耳], to_si: 0.0000254, quantity_kind: absolute}
   pressure:
     canonical: Pa
     units:
-      Pa:  {aliases: [pascal, 帕斯卡], to_si: 1}
-      kPa: {aliases: [kilopascal], to_si: 1e3}
-      atm: {aliases: [标准大气压], to_si: 101325}
+      Pa:  {aliases: [pascal, 帕斯卡], to_si: 1, quantity_kind: absolute}
+      kPa: {aliases: [kilopascal], to_si: 1000, quantity_kind: absolute}
+      atm: {aliases: [标准大气压], to_si: 101325, quantity_kind: absolute}
+  ratio:                      # 无量纲比（降额比/裕度系数）（复审 P0-1⑨）
+    canonical: ratio
+    units:
+      ratio: {aliases: [比值, 系数, percent_of_limit], to_si: 1, quantity_kind: absolute}
+      percent: {aliases: ['%', 百分比], to_si: 0.01, quantity_kind: absolute}
+  dimensionless:              # 纯计数/无单位（复审 P0-1⑨）
+    canonical: dimensionless
+    units:
+      dimensionless: {aliases: [无量纲, count], to_si: 1, quantity_kind: absolute}
+  table:                      # 曲线/查表类输入（lookup_curve 数据源）（复审 P0-1⑨）
+    canonical: table
+    units:
+      table: {aliases: [curve_table, 曲线表], to_si: 1, quantity_kind: absolute}
   flow_rate:
     canonical: Bps
-    note: 网络吞吐用（非本系统主域，保留以支撑适配器测试）
     units:
-      Bps: {aliases: [bytes_per_second], to_si: 1}
+      Bps: {aliases: [bytes_per_second], to_si: 1, quantity_kind: absolute}
 
-alias_normalization_rules:
-  - 全部别名匹配不区分大小写（识别阶段）；归一输出用 canonical。
+normalization_rules:
+  - 别名匹配不区分大小写（识别阶段）；归一输出用 canonical。
   - µ/u/micro 三形态视为同一前缀。
-  - 识别失败（未知单位）报 UNKNOWN_UNIT，不猜测。
-  - 温差与绝对温度混用报 TEMPERATURE_SCALE_AMBIGUOUS。
+  - 温度双轨（r3）：MeasuredParam/inputs 带 quantity_kind。absolute 温度归一到 K（带 273.15 偏移）；delta 温差归一到 K 差值（无偏移）。表达式只读取已归一值；未知 quantity_kind 的温度报 TEMPERATURE_SCALE_AMBIGUOUS。
+  - 识别失败报 UNKNOWN_UNIT，不猜测。
   - 同维度跨倍率自动归一（0.1 A ↔ 100 mA）；跨维度比较报 DIMENSION_MISMATCH。
+  - lifetime_hours 与 cycles 互不转换（复审 P1-9）；寿命规则显式声明判据类型。

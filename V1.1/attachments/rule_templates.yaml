@@ -1,8 +1,9 @@
-# AI电子硬件可靠性分析系统 - 分层规则标准模板 V1.0
-# 对应 02 §2.2 三类 rule_type；rule.schema.json 为机读约束。
-# 模板均为「示意级起点」：阈值必须来自具体料号手册/适用标准/企业规范（02 §2），不得把示例值当行业限值。
+# AI电子硬件可靠性分析系统 - 分层规则标准模板 V1.1-ER-r3
+# 对应 02 §2.2 三类 rule_type；rule.schema.json（r3）为机读约束。
+# 模板为「示意级起点」：阈值必须来自具体料号手册/适用标准/企业规范（02 §2），不得把示例值当行业限值。
+# r3 修复：日期全部加引号（string）、status=published、evidence 补全、preconditions 数组化（DSL+on_fail）、
+#         thresholds variants、tests >=3 且 kind 覆盖 normal/boundary/invalid、温度 quantity_kind 显式、插件参数带单位、状态机四态。
 
-# ========== 模板 1：declarative_expr（静态布尔/四则规则） ==========
 - rule_id: ELEC-RES-PWR-001
   rule_type: declarative_expr
   domain: derating
@@ -12,39 +13,55 @@
     component_category: Resistor
     sub_category: Thick_Film_Chip
   inputs:
-    - {name: power_dissipation, unit: W, required: true, source: ComponentStress}
-    - {name: rated_power_70c, unit: W, required: true, source: Component.rated_params}
-    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress}
-    - {name: derating_ratio_limit, unit: ratio, required: true, source: Thresholds}
+    - {name: power_dissipation, unit: W, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: rated_power_70c, unit: W, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: derating_ratio_limit, unit: ratio, required: true, source: Thresholds, quantity_kind: absolute}
   preconditions:
-    - "local_ambient_temp <= 70"
+    - {expr: "local_ambient_temp <= 70", on_fail: SKIPPED_PRECONDITION}
   expression: "(power_dissipation / rated_power_70c) <= derating_ratio_limit"
   thresholds:
     derating_ratio_limit:
-      default: 0.50
-      high_reliability: 0.40
-      source: "企业元器件降额规范 Q/XXX-2026 第4.2条"
+      variants:
+        - {condition: "profile=default", value: 0.50, unit: ratio}
+        - {condition: "profile=high_reliability", value: 0.40, unit: ratio}
+      source_ref: "EVD-STD-012"
+      applicability_note: "企业元器件降额规范 Q/XXX-2026 第4.2条（示意占位；待企业批准）"
   severity: high
   rationale: 电阻长期工作在接近额定功率下会导致阻值漂移、焊点热疲劳及基板碳化
   recommendation: 更换更大封装尺寸（提高额定功率）或采用多颗电阻串并联分担功耗
   evidence:
-    - {evidence_id: EVD-STD-012, page_or_section: "Section 4.2, Table 3"}
+    - evidence_id: EVD-STD-012
+      level: A
+      publisher: "（示例）企业标准化委员会"
+      title: "企业元器件降额规范 Q/XXX-2026"
+      version_date: "2026-01-15"
+      locator: "Section 4.2, Table 3"
+      limitations: "示意占位；正式版须替换为企业受控文件"
   evidence_level: A
   owner: "张工(器件工程)"
   reviewer: "李工(可靠性负责人)"
-  version: 1.0.0
-  status: approved
-  effective_date: 2026-11-21
-  expiry_date: 2028-11-21
+  version: "1.1.0"
+  status: published
+  effective_date: "2026-11-21"
+  expiry_date: "2028-11-21"
   tests:
     - name: 正常50%降额边界通过
+      kind: boundary
       inputs: {power_dissipation: 0.05, rated_power_70c: 0.1, local_ambient_temp: 55, derating_ratio_limit: 0.5}
       expected_pass: true
-    - name: 超温条件不适用本规则（交由高温折减规则）
+      expected_status: PASS
+    - name: 超降额阈值判失败
+      kind: invalid
+      inputs: {power_dissipation: 0.08, rated_power_70c: 0.1, local_ambient_temp: 55, derating_ratio_limit: 0.5}
+      expected_pass: false
+      expected_status: FAIL
+    - name: 超温条件跳过（交由高温折减规则）
+      kind: normal
       inputs: {power_dissipation: 0.04, rated_power_70c: 0.1, local_ambient_temp: 85, derating_ratio_limit: 0.5}
       expected_status: SKIPPED_PRECONDITION
+  notes: "本规则只覆盖 70℃ 以下稳态工况；>70℃ 场景由温度折减曲线规则（lookup_curve）承接。"
 
-# ========== 模板 2：lookup_curve（二维曲线插值/包络规则） ==========
 - rule_id: ELEC-MOS-SOA-002
   rule_type: lookup_curve
   domain: power
@@ -54,36 +71,59 @@
     component_category: MOSFET
     operating_mode: [Linear_Mode, Inrush_Startup]
   inputs:
-    - {name: peak_vds, unit: V, required: true, source: ComponentStress}
-    - {name: peak_id, unit: A, required: true, source: ComponentStress}
-    - {name: pulse_width_ms, unit: ms, required: true, source: ComponentStress}
-    - {name: case_temp, unit: degC, required: true, source: ComponentStress}
-    - {name: soa_curve_table, unit: table, required: true, source: Component.datasheet_curves}
+    - {name: peak_vds, unit: V, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: peak_id, unit: A, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: pulse_width_ms, unit: ms, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: case_temp, unit: degC, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: soa_curve_table, unit: table, required: true, source: "Component.datasheet_curves", quantity_kind: absolute}
   preconditions:
-    - "soa_curve_table != null"
+    - {expr: "soa_curve_table != null", on_fail: DATA_GAP}
   curve_eval:
-    interpolation: log_log_linear      # 双对数坐标线性插值（符合 SOA 曲线物理特性）
-    temp_derating_factor: "1 - (case_temp - 25) / (150 - 25)"
-    safety_margin_ratio: 0.80          # 工作点须低于折减后 SOA 极限电流的 80%
+    interpolation: log_log_linear
+    # 温度折减按绝对温差（delta, 单位 K）计算，避免 °C/K 仿射混淆：
+    # delta_T = case_temp - 25（°C 差值与 K 差值数值等价）；折减因子 = 1 - delta_T/125
+    temp_derating_delta_ref_c: 25
+    temp_derating_delta_max_c: 125
+    temp_derating_factor: "1 - ((case_temp - 25) / 125)"
+    safety_margin_ratio: 0.80
     expression: "peak_id <= lookup_max_id(soa_curve_table, pulse_width_ms, peak_vds) * temp_derating_factor * safety_margin_ratio"
+    curve_out_of_bounds: error
   severity: critical
   rationale: 线性区启动时局部热点集中（Spirito 效应），易引发二次击穿导致 MOSFET 短路烧毁
   recommendation: 增大栅极电容减缓导通速度、选用 SOA 更宽的器件，或增加预充电限流电路
   evidence:
-    - {evidence_id: EVD-DS-MOS882, page_or_section: "Fig.11 Maximum Safe Operating Area"}
+    - evidence_id: EVD-DS-MOS882
+      level: A
+      publisher: "（示例）MOS882 制造商"
+      title: "MOS882 Datasheet"
+      version_date: "2026-05-20"
+      locator: "Fig.11 Maximum Safe Operating Area"
+      limitations: "SOA 曲线为 TC=25℃ 基准；曲线表由 01 §7A 管线提取并人工校对"
   evidence_level: A
   owner: "王工(电源可靠性)"
   reviewer: "李工(可靠性负责人)"
-  version: 1.0.0
-  status: approved
-  effective_date: 2026-11-21
-  expiry_date: 2027-11-21
+  version: "1.1.0"
+  status: published
+  effective_date: "2026-11-21"
+  expiry_date: "2027-11-21"
   tests:
     - name: 10ms脉冲在25℃下处于80%包络内
+      kind: normal
       inputs: {peak_vds: 24, peak_id: 4.5, pulse_width_ms: 10, case_temp: 25, soa_curve_table: MOCK_SOA_10A_AT_24V_10MS}
       expected_pass: true
+      expected_status: PASS
+    - name: 边界——工作点恰在折减后包络线
+      kind: boundary
+      inputs: {peak_vds: 24, peak_id: 8.0, pulse_width_ms: 10, case_temp: 25, soa_curve_table: MOCK_SOA_10A_AT_24V_10MS}
+      expected_pass: true
+      expected_status: PASS
+    - name: 超包络判 Critical 失败
+      kind: invalid
+      inputs: {peak_vds: 24, peak_id: 9.5, pulse_width_ms: 10, case_temp: 25, soa_curve_table: MOCK_SOA_10A_AT_24V_10MS}
+      expected_pass: false
+      expected_status: FAIL
+  notes: "温度折减因子手算复核：case_temp=25 → factor=1.00；85 → 0.52；150 → 0.00（三组用例进 CI）。"
 
-# ========== 模板 3：script_plugin（受控计算插件规则） ==========
 - rule_id: ELEC-ECAP-LIFE-003
   rule_type: script_plugin
   domain: derating
@@ -93,39 +133,58 @@
     component_category: Capacitor
     sub_category: Aluminum_Electrolytic
   inputs:
-    - {name: ripple_current_rms, unit: A, required: true, source: ComponentStress}
-    - {name: esr_at_freq, unit: ohm, required: true, source: Component.rated_params}
-    - {name: thermal_resistance_ca, unit: degC_per_W, required: true, source: Component.rated_params}
-    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress}
-    - {name: rated_max_temp, unit: degC, required: true, source: Component.rated_params}
-    - {name: rated_endurance_hours, unit: h, required: true, source: Component.rated_params}
-    - {name: product_lifetime_target, unit: h, required: true, source: OperatingProfile}
+    - {name: ripple_current_rms, unit: A, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: esr_at_freq, unit: ohm, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: thermal_resistance_ca, unit: degC_per_W, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress, quantity_kind: absolute}
+    - {name: rated_max_temp, unit: degC, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: rated_endurance_hours, unit: h, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: product_lifetime_target, unit: h, required: true, source: OperatingProfile, quantity_kind: absolute}
   preconditions:
-    - "local_ambient_temp < rated_max_temp"
+    - {expr: "local_ambient_temp < rated_max_temp", on_fail: NOT_APPLICABLE}
   plugin_ref:
     module: "reliability_calc.capacitors.ecap_arrhenius_v1"
     entry_func: "evaluate_ecap_lifetime"
+    digest: "sha256:待入库时以插件包内容计算"
     params:
-      doubling_temp_delta: 10.0        # 温度每降10℃寿命翻倍（默认基线，优先读取器件手册专属参数）
-      life_safety_factor: 1.2          # 预测寿命需大于产品目标寿命的 1.2 倍
+      doubling_temp_delta: {value: 10.0, unit: K, quantity_kind: delta}
+      life_safety_factor: {value: 1.2, unit: ratio, quantity_kind: absolute}
   outputs_exposed:
-    - core_temp_est                    # 输出估算芯温供报告展示
-    - predicted_life_hours             # 输出预测寿命小时数
+    - {name: core_temp_est, unit: degC, type: number, quantity_kind: absolute}
+    - {name: predicted_life_hours, unit: h, type: number, quantity_kind: absolute}
   severity: high
   rationale: 电解液干涸速率随芯温呈指数上升，高频纹波引发的 ESR 损耗是高温失效主因
   recommendation: 选用低 ESR 型号、多颗电容并联降低单颗纹波电流，或远离功率电感/散热器布局
   evidence:
-    - {evidence_id: EVD-APP-NIC04, page_or_section: "Aluminum Electrolytic Capacitor Application Guide p.14"}
+    - evidence_id: EVD-APP-NIC04
+      level: A
+      publisher: "（示例）电容制造商"
+      title: "Aluminum Electrolytic Capacitor Application Guide"
+      version_date: "2025-08-01"
+      locator: "p.14"
+      limitations: "倍增温度以器件手册为准；通用指南值为默认基线"
   evidence_level: A
   owner: "张工(器件工程)"
   reviewer: "李工(可靠性负责人)"
-  version: 1.0.0
-  status: approved
-  effective_date: 2026-11-21
-  expiry_date: 2028-11-21
+  version: "1.1.0"
+  status: published
+  effective_date: "2026-11-21"
+  expiry_date: "2028-11-21"
   tests:
-    - name: 标准105℃/2000h电容在65℃下寿命计算验证
+    - name: 标准105℃/2000h电容在65℃下寿命计算验证（手算基准：66℃/29863h）
+      kind: normal
       inputs: {ripple_current_rms: 0.5, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 65, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}
       expected_pass: true
+      expected_status: PASS
       expected_outputs: {core_temp_est: 66.0, predicted_life_hours: 29863.0}
-      tolerance_rel: 0.001             # 数值相对误差 ≤0.1%（挂钩 03 §5）
+      tolerance_rel: 0.001
+    - name: 边界——环境温度等于额定温度（纹波为零，寿命=额定）
+      kind: boundary
+      inputs: {ripple_current_rms: 0.0, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 105, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}
+      expected_pass: true
+      expected_status: PASS
+    - name: 异常——环境温度超额定（前置 NOT_APPLICABLE）
+      kind: invalid
+      inputs: {ripple_current_rms: 0.5, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 110, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}
+      expected_status: NOT_APPLICABLE
+  notes: "手算复核：P_ripple=I^2·ESR=0.025W；ΔT=0.025×40=1.0℃；芯温=66℃；寿命=2000×2^((105-66)/10)=2000×14.93≈29863h。"
