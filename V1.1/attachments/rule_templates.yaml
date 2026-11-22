@@ -135,13 +135,13 @@
   inputs:
     - {name: ripple_current_rms, unit: A, required: true, source: ComponentStress, quantity_kind: absolute}
     - {name: esr_at_freq, unit: ohm, required: true, source: "Component.rated_params", quantity_kind: absolute}
-    - {name: thermal_resistance_ca, unit: degC_per_W, required: true, source: "Component.rated_params", quantity_kind: absolute}
+    - {name: thermal_resistance_ca, unit: degC_per_W, required: true, source: "Component.rated_params", quantity_kind: delta}
     - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress, quantity_kind: absolute}
     - {name: rated_max_temp, unit: degC, required: true, source: "Component.rated_params", quantity_kind: absolute}
     - {name: rated_endurance_hours, unit: h, required: true, source: "Component.rated_params", quantity_kind: absolute}
     - {name: product_lifetime_target, unit: h, required: true, source: OperatingProfile, quantity_kind: absolute}
   preconditions:
-    - {expr: "local_ambient_temp < rated_max_temp", on_fail: NOT_APPLICABLE}
+    - {expr: "local_ambient_temp <= rated_max_temp", on_fail: NOT_APPLICABLE}
   plugin_ref:
     module: "reliability_calc.capacitors.ecap_arrhenius_v1"
     entry_func: "evaluate_ecap_lifetime"
@@ -178,11 +178,11 @@
       expected_status: PASS
       expected_outputs: {core_temp_est: 66.0, predicted_life_hours: 29863.0}
       tolerance_rel: 0.001
-    - name: 边界——环境温度等于额定温度（纹波为零，寿命=额定）
+    - name: 边界——环境温度等于额定温度（纹波为零，寿命=额定，但低于产品目标判 FAIL）
       kind: boundary
       inputs: {ripple_current_rms: 0.0, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 105, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}
-      expected_pass: true
-      expected_status: PASS
+      expected_pass: false
+      expected_status: FAIL
     - name: 异常——环境温度超额定（前置 NOT_APPLICABLE）
       kind: invalid
       inputs: {ripple_current_rms: 0.5, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 110, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}

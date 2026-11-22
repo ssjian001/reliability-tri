@@ -142,3 +142,9 @@
 
 ### 校验状态
 validate_assets.py：**PASS**（RULE ×3 PASS、BENCHMARK SAMPLE PASS、INJECTION 28≥20、COLLISIONS 0 + WARN ×3 已知歧义）。
+
+## 10. V1.1.1-r3-delta（2026-11-22）：协作者 delta 复审修复
+
+来源：协作者对 r3 文档层的追加复审（REVIEW/V1.1-ER-r3-delta-review.md，确认 P0-1 已清零、P0-2「只改定义没改样例」仍阻断 + 1 P1 + 4 P2）。
+**核心修复**：DSL 字面量单位口径定案（02 §2.1 + engine 实现双落地）——表达式字面量按所在 inputs 的声明单位口径解释（MeasuredParam.decl），模板常量 °C 直觉语义成立；02 §2.1 温度双轨重写（quantity_kind 显式）+ published ≥3 用例门禁（schema if/then）+ 错误码表扩全；01 promote 流转 approved→published、工日按 0.5-1 人日/条区间、README 版本行与容差口径同步、interface-spec batch_id 改 UUIDv7、unit_dictionary 移除单字母 C 别名（charge 冲突）、rule_templates 补 thermal_resistance_ca quantity_kind=delta 与前置边界 <=。
+pytest 6 passed + validate_assets PASS。

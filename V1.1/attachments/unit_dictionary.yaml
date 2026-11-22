@@ -54,7 +54,7 @@ dimensions:
     offset_to_si: 273.15      # K = degC + 273.15
     units:
       K:    {aliases: [kelvin, 开尔文], to_si: 1, quantity_kind: absolute}
-      degC: {aliases: [°C, ℃, celsius, 摄氏度, C], to_si: affine(+273.15), quantity_kind: absolute}
+      degC: {aliases: [°C, ℃, celsius, 摄氏度], to_si: affine(+273.15), quantity_kind: absolute}
       degF: {aliases: [°F, fahrenheit, 华氏度], to_si: affine((x-32)/1.8→degC→K), quantity_kind: absolute}
   temperature_delta:          # 温差：归一到 K 差值（无偏移；°C 差值与 K 差值数值等价）
     canonical: K
@@ -151,3 +151,5 @@ alias_normalization_rules:
 non_physical_types:
   table:
     description: 结构化曲线表/数据对象（lookup_curve 数据源）；不参与物理量换算与 SI 归一流程（V1.1.1 合并）
+
+# r3-delta 补充（复审 P2-5）：单字母 C 别名已移除（charge 维度 canonical=C 冲突）；库仑场景须显式 dimension=charge

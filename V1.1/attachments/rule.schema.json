@@ -39,7 +39,7 @@
         "fa",
         "dvpr"
       ],
-      "description": "规则域，与基准集 domain 字段一致（03 §4）"
+      "description": "规则域：8 技术域（derating/pcb_pcba/power/esd_emi/thermal/dfmea/fa/dvpr）；对抗/边界域 5 类（unit_anomaly 等）仅用于 benchmark.domain，规则不使用（复审 delta P2-3）"
     },
     "title": {
       "type": "string",
@@ -391,7 +391,10 @@
             "description": "数值相对误差容差，默认 0.001（挂钩 03 §5 浮点口径）"
           },
           "error_code": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "enum": [
               "MISSING_INPUT",
               "DIV_BY_ZERO",
@@ -400,7 +403,8 @@
               "TEMPERATURE_SCALE_AMBIGUOUS",
               "CONFLICT_UNRESOLVED",
               null
-            ]
+            ],
+            "description": "错误码；null=无错误（PASS/SKIPPED/NA 场景）"
           }
         }
       }
@@ -566,6 +570,26 @@
           "plugin_ref",
           "outputs_exposed"
         ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "published"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "tests": {
+            "minItems": 3
+          }
+        },
+        "description": "复审 delta P1-1：published 前 ≥3 用例（kind 覆盖由 validate_assets 复核）"
       }
     }
   ]
