@@ -16,14 +16,15 @@ import uuid
 from pathlib import Path
 
 import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from reliability_engine import RuleExecutor  # V1.1.1-G1 新引擎
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from reliability_engine import UnitEngine, run_rule
-from reliability_engine.measured import MeasuredParam
 
 STATE_DIR = Path(__file__).resolve().parents[1] / "api_state"
 STATE_DIR.mkdir(exist_ok=True)
@@ -167,10 +168,13 @@ class RuleIn(BaseModel):
 
 # ---------- 引擎接入 ----------
 ATT = Path(__file__).resolve().parents[2] / "V1.1/attachments"
-UNIT_ENGINE = UnitEngine(ATT / "unit_dictionary.yaml")
 
+
+EXECUTOR = RuleExecutor()
 
 def run_analysis(project_id: str, run_id: str, analysis_type: str, profile_id: str, comp_filter=None):
+    """G1 新引擎接入：rule 的 expression_or_payload 展开到顶层后交 RuleExecutor.execute。
+    inputs 直接用 {name: {value, unit, ...}} 形态（新引擎原生契约）。"""
     proj = STATE["projects"].get(project_id)
     if proj is None:
         STATE["runs"][run_id] = {"status": "FAILED", "reason": "项目不存在"}
@@ -186,22 +190,22 @@ def run_analysis(project_id: str, run_id: str, analysis_type: str, profile_id: s
             continue
         for profile in proj.get("profiles", [profile_id]):
             for rule in rule_list:
+                # 展开 expression_or_payload 到顶层（新引擎契约）
+                exec_rule = {k: v for k, v in rule.items() if k != "expression_or_payload"}
+                payload = rule.get("expression_or_payload") or {}
+                exec_rule.update(payload)
+                # inputs：{name: {value, unit, ...}}（新引擎原生契约）
                 inputs = {}
-                # ComponentStress 映射：(refdes, profile) → MeasuredParam
                 stress = (proj.get("stresses") or {}).get(f"{bom['refdes']}@{profile}", {})
                 for spec in rule.get("inputs", []):
                     key = spec.get("source_mapping") or spec["name"]
                     raw = stress.get(key) or bom.get("rated_params", {}).get(key)
                     if raw is None:
                         continue
-                    try:
-                        from reliability_engine.measured import from_dict
-                        inputs[spec["name"]] = from_dict({**raw, "unit": raw.get("unit", spec.get("unit", "dimensionless"))}, UNIT_ENGINE)
-                    except Exception:
-                        continue
+                    inputs[spec["name"]] = {**raw, "unit": raw.get("unit", spec.get("unit", "dimensionless"))}
                 if not inputs:
                     continue
-                result = run_rule(rule, inputs, UNIT_ENGINE)
+                result = EXECUTOR.execute(exec_rule, inputs)
                 fid = f"F-{run_id[:8]}-{len(findings)+1}"
                 finding = {
                     "finding_id": fid, "run_id": run_id,
@@ -209,13 +213,13 @@ def run_analysis(project_id: str, run_id: str, analysis_type: str, profile_id: s
                     "rule_id": rule["rule_id"], "rule_version": rule.get("version", "0.1.0"),
                     "risk_level": rule.get("severity", "medium"),
                     "conclusion_tag": "RULE_DERIVED",
-                    "execution_status": result["execution_status"],
+                    "execution_status": (result.get("status") or "ERROR").upper(),
                     "rationale": rule.get("rationale", ""),
-                    "calculated_margin": result["info"],
-                    "data_gaps": result["reasons"],
+                    "calculated_margin": result.get("result"),
+                    "data_gaps": [result.get("error_code")] if result.get("error_code") else [],
                     "disposition": "open", "assignee": "", "due_date": None,
                 }
-                if result["execution_status"] in ("PASS", "FAIL"):
+                if result.get("status") in ("pass", "fail"):
                     findings.append(finding)
     STATE["findings"][run_id] = findings
     run = STATE["runs"][run_id]

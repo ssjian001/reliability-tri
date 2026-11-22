@@ -1,0 +1,27 @@
+{"ts": 1795348910.6299055, "action": "project.create", "project_id": "cb80f7b4dc78", "user": "tester"}
+{"ts": 1795348910.6374078, "action": "bom.import", "project_id": "cb80f7b4dc78", "accepted": 2}
+{"ts": 1795348910.6439228, "action": "stress.upsert", "project_id": "cb80f7b4dc78", "count": 1}
+{"ts": 1795348910.651426, "action": "project.create", "project_id": "9fceaa474bff", "user": "tester"}
+{"ts": 1795348910.657554, "action": "artifact.upload", "project_id": "9fceaa474bff", "artifact_id": "8a5ae86d8a87", "checksum": "e98a9141c3ff"}
+{"ts": 1795348910.6634443, "action": "project.create", "project_id": "11da8e204853", "user": "tester"}
+{"ts": 1795348910.676258, "action": "rule.create", "rule_id": "ELEC-CAP-RIPPLE-5A2D6E"}
+{"ts": 1795348910.687241, "action": "rule.promote", "rule_id": "ELEC-CAP-RIPPLE-5A2D6E", "to": "in_review"}
+{"ts": 1795348910.6928601, "action": "rule.rollback", "rule_id": "ELEC-CAP-RIPPLE-5A2D6E"}
+{"ts": 1795348910.6995282, "action": "project.create", "project_id": "5e74c4541751", "user": "tester"}
+{"ts": 1795348910.7058325, "action": "bom.import", "project_id": "5e74c4541751", "accepted": 2}
+{"ts": 1795348910.7115502, "action": "stress.upsert", "project_id": "5e74c4541751", "count": 1}
+{"ts": 1795348910.7177007, "action": "analysis.start", "run_id": "2c3511396629", "type": "derating"}
+{"ts": 1795348910.7193663, "action": "analysis", "run_id": "2c3511396629", "findings": 0}
+{"ts": 1795348930.066967, "action": "project.create", "project_id": "5e0736ea7f15", "user": "tester"}
+{"ts": 1795348930.0749595, "action": "bom.import", "project_id": "5e0736ea7f15", "accepted": 2}
+{"ts": 1795348930.0817385, "action": "stress.upsert", "project_id": "5e0736ea7f15", "count": 1}
+{"ts": 1795348930.08907, "action": "project.create", "project_id": "dfff042d0a68", "user": "tester"}
+{"ts": 1795348930.0949519, "action": "artifact.upload", "project_id": "dfff042d0a68", "artifact_id": "780ca584361e", "checksum": "e98a9141c3ff"}
+{"ts": 1795348930.1139765, "action": "rule.create", "rule_id": "ELEC-CAP-RIPPLE-E89ACE"}
+{"ts": 1795348930.1244214, "action": "rule.promote", "rule_id": "ELEC-CAP-RIPPLE-E89ACE", "to": "in_review"}
+{"ts": 1795348930.1299965, "action": "rule.rollback", "rule_id": "ELEC-CAP-RIPPLE-E89ACE"}
+{"ts": 1795348930.1369123, "action": "project.create", "project_id": "30775c1be681", "user": "tester"}
+{"ts": 1795348930.1431074, "action": "bom.import", "project_id": "30775c1be681", "accepted": 2}
+{"ts": 1795348930.1493526, "action": "stress.upsert", "project_id": "30775c1be681", "count": 1}
+{"ts": 1795348930.1560583, "action": "analysis.start", "run_id": "6d0cb7957f87", "type": "derating"}
+{"ts": 1795348930.1575909, "action": "analysis", "run_id": "6d0cb7957f87", "findings": 0}

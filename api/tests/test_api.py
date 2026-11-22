@@ -7,8 +7,9 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from api.main import app, STATE  # noqa: E402
+from api.main import app, STATE, EXECUTOR  # noqa: E402
 
 client = TestClient(app)
 HDRS = {"Authorization": "Bearer test", "X-User": "tester"}

@@ -1,0 +1,17 @@
+{
+  "rule_id": "ELEC-PLUGIN-001",
+  "rule_type": "script_plugin",
+  "plugin_ref": "approved.derating.check",
+  "parameter_sources": {
+    "component_id": {
+      "source_type": "input",
+      "evidence_ref": "TBD",
+      "approval_required": true
+    },
+    "operating_profile": {
+      "source_type": "rule_parameter",
+      "evidence_ref": "TBD",
+      "approval_required": true
+    }
+  }
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "rule_id": "ELEC-THERMAL-001",
+    "rule_type": "expression",
+    "expression": "local_ambient_temp <= 70[degC] and junction_temp <= 125[degC]",
+    "inputs": {
+      "local_ambient_temp": {
+        "value": 65,
+        "unit": "degC"
+      },
+      "junction_temp": {
+        "value": 118,
+        "unit": "degC"
+      }
+    },
+    "expected_status": "pass"
+  },
+  {
+    "rule_id": "ELEC-RES-CURVE-001",
+    "rule_type": "lookup_curve",
+    "curve": {
+      "input": "load_current",
+      "points": [
+        [
+          {
+            "value": 0,
+            "unit": "A"
+          },
+          {
+            "value": 1.0,
+            "unit": "Ohm"
+          }
+        ],
+        [
+          {
+            "value": 5,
+            "unit": "A"
+          },
+          {
+            "value": 0.8,
+            "unit": "Ohm"
+          }
+        ],
+        [
+          {
+            "value": 10,
+            "unit": "A"
+          },
+          {
+            "value": 0.6,
+            "unit": "Ohm"
+          }
+        ]
+      ],
+      "extrapolation": "error"
+    },
+    "inputs": {
+      "load_current": {
+        "value": 7.5,
+        "unit": "A"
+      }
+    },
+    "expected_result": {
+      "value": 0.7,
+      "unit": "Ohm"
+    }
+  }
+]
