@@ -189,3 +189,15 @@ G1 标记：**prototype → implementation baseline 候选**（待协作者对 e
 - schema temp_var 改条件必填（仅温度折减规则要求）。
 - 测试恢复与补齐：r4-r6 期间的 rebase/checkout 事故曾致测试文件混乱——从 683c06e 干净基线恢复并重补 4 条崩溃路径回归（数字字符串/55x→INVALID_VALUE/AND→DSL 违规/digest 不匹配/verdict_expr）。pytest **10 passed**。
 - validate_assets PASS（published 门禁复核已上线，模板全 draft 故空转——现状如实）。
+
+## 14. G2（2026-11-22）：剩余待办五项落地
+
+| 项 | 交付 | 实测 |
+|---|---|---|
+| G2-1 REST API 服务化 | engine/api/main.py（FastAPI，01 §6 四资源分组全端点：projects/bom:import/artifacts/stresses:batch-upsert/analyses×4 异步 202+run_id/findings 分页过滤/disposition 高风险禁自动关闭/approvals/rules 生命周期 :test/:promote/:rollback/reports:export；幂等键、Bearer 鉴权、审计 JSONL、OpenAPI 自动契约） | pytest 18 passed |
+| G2-2 规则草案 | attachments/rules_draft_60.yaml——**44 条**（目标 60，差额按 02 §4.1 影子运行增补原则列后续；凑数不加）：全 draft、evidence_level=C（行业常见基线待企业批准）、每条 ≥3 用例 | schema 0 errors |
+| G2-3 性能实测 | 1500 器件-工况组合 × 43 条规则：**单 Run 0.08s**（P95 门禁 30s，余量 375 倍）；5 并发墙钟 0.09s；组合级 p50=0.00ms | 实测 PASS |
+| G2-4 注入执行框架 | engine/tests/test_security.py：28 语料逐条注入 applicability_note → 断言判定不受影响、文本不进输出结论、全 payload 状态机稳定 | pytest 4 passed |
+| G2-5 基准集骨架 | V1.1/benchmarks/benchmark_skeleton.yaml——T01-T19 全场景 17 骨架样本（机械场景 T02/T03/T04/T16 完整标注；专家场景标 needs_human_annotation）；benchmark.schema 增 engine_conflict 域与 T 零前缀 pattern | 17/17 schema 通过 |
+
+诚实边界：G2-2 的 44 条为 **draft 草案**（阈值 C 级行业基线，待企业批准转 A/B 并升 published）——「正式规则」的证据审查须人工完成；G2-5 骨架的 expected_findings 细节须领域工程师双人标注（自动化只覆盖机械场景）。

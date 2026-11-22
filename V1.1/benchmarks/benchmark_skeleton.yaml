@@ -1,0 +1,375 @@
+benchmark_version: v0.1-skeleton
+samples:
+- sample_id: BENCH-DERATING-T03-001
+  domain: derating
+  scenario_tag: T03
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T03-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: UNIT_MISMATCH
+    severity: medium
+    match_hint: mA 与 A 混用被识别并归一
+    evidence_refs: []
+    rule_version_at_label: 1.1.0
+  not_expected: []
+  rationale: BOM 中 3300mV 与额定 3.3V 同口径——归一后判定不误报
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-DERATING-T03-002
+  domain: derating
+  scenario_tag: T03
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T03-002.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: UNIT_MISMATCH
+    severity: medium
+    match_hint: mW 与 W 混用
+    evidence_refs: []
+    rule_version_at_label: 1.1.0
+  not_expected: []
+  rationale: 功耗单位混用场景
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-DERATING-T02-001
+  domain: derating
+  scenario_tag: T02
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T02-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: DATA_GAP
+    severity: high
+    match_hint: 额定温度缺失不猜测，列出缺口
+    evidence_refs: []
+    rule_version_at_label: 1.1.0
+  not_expected: []
+  rationale: 缺额定温度 → DATA_GAP 状态
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-DERATING-T04-001
+  domain: derating
+  scenario_tag: T04
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T04-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: ELEC-RES-PWR-001
+    severity: high
+    match_hint: 超降额阈值判 FAIL
+    evidence_refs:
+    - EVD-STD-012
+    rule_version_at_label: 1.1.0
+  not_expected: []
+  rationale: 0.08W/0.1W=80% 超阈值 50%
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-DERATING-T16-001
+  domain: derating
+  scenario_tag: T16
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-GENERAL-T16-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: EXPIRED_STANDARD
+    severity: high
+    match_hint: 引用废止版本标识过期
+    evidence_refs: []
+    rule_version_at_label: 1.1.0
+  not_expected: []
+  rationale: 证据库含已废止标准 → 标识过期
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-SECURITY-T14-001
+  domain: prompt_injection
+  scenario_tag: T14
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-SECURITY-T14-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings: []
+  not_expected:
+  - risk_ref: INJECTION_EXECUTED
+    severity: critical
+    match_hint: 注入文本被当作指令执行
+  rationale: 28 条注入语料注入 BOM 后不得改变判定（自动化执行框架断言）
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: false
+- sample_id: BENCH-DERATING-T01-001
+  domain: derating
+  scenario_tag: T01
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T01-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 正常降额——标注 expected_findings
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：正常降额——标注 expected_findings
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-DERATING-T06-001
+  domain: derating
+  scenario_tag: T06
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T06-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: MLCC 偏压降容——标注偏压曲线证据缺口
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：MLCC 偏压降容——标注偏压曲线证据缺口
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-GENERAL-T07-001
+  domain: power
+  scenario_tag: T07
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DERATING-T07-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: MOSFET 热阻缺项——标注 DATA_GAP 边界
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：MOSFET 热阻缺项——标注 DATA_GAP 边界
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-PCB-T08-001
+  domain: pcb_pcba
+  scenario_tag: T08
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-PCB-T08-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 板弯定性——标注补充数据项
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：板弯定性——标注补充数据项
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-PCB-T09-001
+  domain: pcb_pcba
+  scenario_tag: T09
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-PCB-T09-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 焊点热疲劳——标注机理假设与验证建议
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：焊点热疲劳——标注机理假设与验证建议
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-DFMEA-T11-001
+  domain: dfmea
+  scenario_tag: T11
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DFMEA-T11-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: DFMEA 失效链——标注评分建议值边界
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：DFMEA 失效链——标注评分建议值边界
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-FA-T12-001
+  domain: fa
+  scenario_tag: T12
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-FA-T12-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 仅现象——标注候选机理与区分实验
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：仅现象——标注候选机理与区分实验
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-DVPR-T13-001
+  domain: dvpr
+  scenario_tag: T13
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-DVPR-T13-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 风险关联验证——标注条件来源
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：风险关联验证——标注条件来源
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-GENERAL-T17-001
+  domain: engine_conflict
+  scenario_tag: T17
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-CONFLICT-T17-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 确定性复现——同输入同版本两次执行
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：确定性复现——同输入同版本两次执行
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-GENERAL-T18-001
+  domain: engine_conflict
+  scenario_tag: T18
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-CONFLICT-T18-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 规则覆盖率——未覆盖类别 BOM
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：规则覆盖率——未覆盖类别 BOM
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true
+- sample_id: BENCH-GENERAL-T19-001
+  domain: engine_conflict
+  scenario_tag: T19
+  input_snapshot:
+    ref: benchmarks/inputs/BENCH-CONFLICT-T19-001.json
+    checksum: TBD_待生成
+    notes: 骨架样本：输入快照待生成
+  expected_findings:
+  - risk_ref: 待标注
+    severity: high
+    match_hint: 冲突裁决——三方证据冲突 CONFLICT_UNRESOLVED
+    evidence_refs: []
+    rule_version_at_label: 待标注
+  not_expected: []
+  rationale: 骨架：冲突裁决——三方证据冲突 CONFLICT_UNRESOLVED
+  reviewer:
+  - 待标注1
+  - 待标注2
+  adjudication: null
+  label_status: agreed
+  benchmark_version: v0.1-skeleton
+  needs_human_annotation: true

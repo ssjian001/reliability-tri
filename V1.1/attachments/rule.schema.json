@@ -19,7 +19,8 @@
     "version",
     "status",
     "tests",
-    "rule_type"
+    "rule_type",
+    "expression_or_payload"
   ],
   "properties": {
     "rule_id": {
@@ -113,7 +114,7 @@
     },
     "preconditions": {
       "type": "array",
-      "description": "前置条件数组：只读 inputs 变量的受限表达式；不满足时规则状态为 SKIPPED_PRECONDITION（非失败）。人读补充说明放 notes 字段。",
+      "description": "前置条件数组：只读 inputs 的受限 DSL；不满足时按 on_fail 状态跳过",
       "items": {
         "type": "object",
         "required": [
@@ -121,8 +122,7 @@
         ],
         "properties": {
           "expr": {
-            "type": "string",
-            "description": "受限 DSL（同 expression 白名单），只读 inputs 变量"
+            "type": "string"
           },
           "on_fail": {
             "type": "string",
@@ -131,22 +131,21 @@
               "NOT_APPLICABLE",
               "DATA_GAP"
             ],
-            "default": "SKIPPED_PRECONDITION",
-            "description": "不满足时的规则状态"
+            "default": "SKIPPED_PRECONDITION"
           }
         }
       }
     },
-    "expression": {
-      "type": "string",
-      "description": "受限 DSL 表达式（Python 语法子集），仅 rule_type=declarative_expr 必填。白名单：比较 > >= < <= == !=、逻辑 and or not、算术 + - * /、三元条件 (值1 if 条件 else 值2)。求值口径：变量按 inputs 声明单位传入（decl），字面量同口径可比（02 §2.1）。变量名须在 inputs 中定义。lookup_curve/script_plugin 不使用本字段。",
-      "maxLength": 500
-    },
     "thresholds": {
+      "description": "阈值组；纯提示类规则（无数值判定）与 plugin 判定类可为 null",
       "oneOf": [
         {
+          "type": "null"
+        },
+        {
           "type": "object",
-          "description": "单值阈值：键=阈值名，值={value,unit,source_ref}",
+          "minProperties": 1,
+          "description": "单值阈值",
           "additionalProperties": {
             "type": "object",
             "required": [
@@ -172,7 +171,8 @@
         },
         {
           "type": "object",
-          "description": "分档阈值组：键=阈值名，值含 variants",
+          "minProperties": 1,
+          "description": "分档阈值组",
           "additionalProperties": {
             "type": "object",
             "required": [
@@ -192,8 +192,7 @@
                   ],
                   "properties": {
                     "condition": {
-                      "type": "string",
-                      "description": "适用条件，如 local_ambient_temp<=70 或 profile=high_reliability"
+                      "type": "string"
                     },
                     "value": {
                       "type": "number"
@@ -341,7 +340,7 @@
     "tests": {
       "type": "array",
       "minItems": 1,
-      "description": "单测用例。发布（published）前须 ≥3 条且 kind 覆盖 normal/boundary/invalid（02 §2.1）；本 schema 仅要求 ≥1 条以便草稿期校验。",
+      "description": "单测用例。发布（published）前须 ≥3 条且 kind 覆盖 normal/boundary/invalid（validate_assets 复核）；本 schema 仅要求 ≥1 条以便草稿期校验。",
       "items": {
         "type": "object",
         "required": [
@@ -426,212 +425,204 @@
       ],
       "description": "规则类型：declarative_expr=静态布尔/四则（DSL 流水线）；lookup_curve=二维曲线插值/包络（曲线插值引擎）；script_plugin=受控白名单计算插件。执行器见 01 §3.1，模板见 rule_templates.yaml"
     },
-    "curve_eval": {
-      "type": "object",
-      "description": "rule_type=lookup_curve 的执行配置（v1 定案：单族 1D 插值；expression 字段为人读描述不执行）。执行语义：按 table_columns 从曲线表取 x/y 列，log-log 插值得 limit_raw，乘 temp_derating_factor 与 safety_margin_ratio 后与目标值比较。 temp_var 仅在温度折减（temp_derating_delta_ref_c 存在）时必填（V1.1.1-r3-delta 复核 P2）。",
-      "required": [
-        "interpolation",
-        "table_columns",
-        "target_var"
-      ],
-      "properties": {
-        "interpolation": {
-          "type": "string",
-          "description": "插值方法，如 log_log_linear（双对数线性）"
-        },
-        "temp_derating_factor": {
-          "type": "string",
-          "description": "温度折减因子表达式（case_temp 为输入变量）"
-        },
-        "safety_margin_ratio": {
-          "type": "number",
-          "exclusiveMinimum": 0,
-          "maximum": 1,
-          "description": "安全裕度系数：工作点须低于折减后极限的该比例"
-        },
-        "expression": {
-          "type": "string",
-          "description": "包络判定表达式；lookup_max_id(曲线表, x, y) 为引擎内置插值函数"
-        },
-        "curve_out_of_bounds": {
-          "type": "string",
-          "enum": [
-            "error",
-            "clamp"
-          ],
-          "description": "曲线边界外行为：报错或钳位；默认 error"
-        },
-        "table_columns": {
-          "type": "object",
-          "description": "曲线表列声明（消除列名硬编码，复审 B-2）",
-          "required": [
-            "x",
-            "y"
-          ],
-          "properties": {
-            "x": {
-              "type": "string",
-              "description": "横轴列名（如 pulse_width_ms）"
-            },
-            "y": {
-              "type": "string",
-              "description": "纵轴列名（如 max_id）"
-            },
-            "family": {
-              "type": "string",
-              "description": "V2 预留：多族分组列（如 peak_vds）"
-            }
-          }
-        },
-        "target_var": {
-          "type": "string",
-          "description": "判定目标变量名（inputs 中声明该单位量，如 peak_id）——与 limit 比较的值"
-        },
-        "temp_var": {
-          "type": "string",
-          "description": "温度折减的温度变量名（inputs 中声明，复审 P2：去名称推断）"
-        }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "temp_derating_delta_ref_c": {
-                "not": {
-                  "const": null
-                }
-              }
-            },
-            "required": [
-              "temp_derating_delta_ref_c"
-            ]
-          },
-          "then": {
-            "required": [
-              "interpolation",
-              "table_columns",
-              "target_var",
-              "temp_var"
-            ]
-          }
-        }
-      ]
-    },
-    "plugin_ref": {
-      "type": "object",
-      "description": "rule_type=script_plugin 时的受控计算插件引用；插件须在注册表中版本化并经代码审计（01 §3.1）",
-      "required": [
-        "module",
-        "entry_func"
-      ],
-      "properties": {
-        "module": {
-          "type": "string",
-          "description": "白名单包内模块路径，如 reliability_calc.capacitors.ecap_arrhenius_v1"
-        },
-        "entry_func": {
-          "type": "string"
-        },
-        "params": {
-          "type": "object",
-          "description": "插件固定参数（如寿命倍增温度、安全系数）；来源须为 A/B 级证据或标注默认基线"
-        },
-        "digest": {
-          "type": "string",
-          "description": "插件内容哈希（sha256），跨版本重算对齐依据"
-        },
-        "verdict_expr": {
-          "type": "string",
-          "description": "判定表达式（DSL 语法，可引用 outputs_exposed 与 inputs 变量）：求值真=PASS。消除执行器硬编码判定语义（复审 C-1）"
-        }
-      }
-    },
-    "outputs_exposed": {
-      "type": "array",
-      "description": "script_plugin 暴露给报告/后续比较的输出变量，逐个带单位与量性质（02 §2.2；复审 P1-7）",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "unit",
-          "type"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "unit": {
-            "type": "string",
-            "description": "须在 unit_dictionary.yaml 中可归一"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "number",
-              "string",
-              "boolean"
-            ]
-          },
-          "quantity_kind": {
-            "type": "string",
-            "enum": [
-              "absolute",
-              "delta"
-            ],
-            "description": "温度类必填"
-          }
-        }
-      }
-    },
     "notes": {
       "type": "string",
       "description": "人读补充说明（preconditions 数组化后的人读语义）"
+    },
+    "expression_or_payload": {
+      "description": "执行载荷三选一（按 rule_type）：declarative_expr→expression；lookup_curve→curve_eval；script_plugin→plugin_ref+outputs_exposed（01 §5.3 包络式定案）",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "expression"
+          ],
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "受限 DSL 表达式（Python 语法子集），仅 rule_type=declarative_expr 必填。白名单：比较 > >= < <= == !=、逻辑 and or not、算术 + - * /、三元条件 (值1 if 条件 else 值2)。求值口径：变量按 inputs 声明单位传入（decl），字面量同口径可比（02 §2.1）。变量名须在 inputs 中定义。lookup_curve/script_plugin 不使用本字段。",
+              "maxLength": 500
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "curve_eval"
+          ],
+          "properties": {
+            "curve_eval": {
+              "type": "object",
+              "description": "rule_type=lookup_curve 的执行配置（v1 定案：单族 1D 插值；expression 字段为人读描述不执行）。执行语义：按 table_columns 从曲线表取 x/y 列，log-log 插值得 limit_raw，乘 temp_derating_factor 与 safety_margin_ratio 后与目标值比较。 temp_var 仅在温度折减（temp_derating_delta_ref_c 存在）时必填（V1.1.1-r3-delta 复核 P2）。",
+              "required": [
+                "interpolation",
+                "table_columns",
+                "target_var"
+              ],
+              "properties": {
+                "interpolation": {
+                  "type": "string",
+                  "description": "插值方法，如 log_log_linear（双对数线性）"
+                },
+                "temp_derating_factor": {
+                  "type": "string",
+                  "description": "温度折减因子表达式（case_temp 为输入变量）"
+                },
+                "safety_margin_ratio": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1,
+                  "description": "安全裕度系数：工作点须低于折减后极限的该比例"
+                },
+                "expression": {
+                  "type": "string",
+                  "description": "包络判定表达式；lookup_max_id(曲线表, x, y) 为引擎内置插值函数"
+                },
+                "curve_out_of_bounds": {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "clamp"
+                  ],
+                  "description": "曲线边界外行为：报错或钳位；默认 error"
+                },
+                "table_columns": {
+                  "type": "object",
+                  "description": "曲线表列声明（消除列名硬编码，复审 B-2）",
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "string",
+                      "description": "横轴列名（如 pulse_width_ms）"
+                    },
+                    "y": {
+                      "type": "string",
+                      "description": "纵轴列名（如 max_id）"
+                    },
+                    "family": {
+                      "type": "string",
+                      "description": "V2 预留：多族分组列（如 peak_vds）"
+                    }
+                  }
+                },
+                "target_var": {
+                  "type": "string",
+                  "description": "判定目标变量名（inputs 中声明该单位量，如 peak_id）——与 limit 比较的值"
+                },
+                "temp_var": {
+                  "type": "string",
+                  "description": "温度折减的温度变量名（inputs 中声明，复审 P2：去名称推断）"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "temp_derating_delta_ref_c": {
+                        "not": {
+                          "const": null
+                        }
+                      }
+                    },
+                    "required": [
+                      "temp_derating_delta_ref_c"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "interpolation",
+                      "table_columns",
+                      "target_var",
+                      "temp_var"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "plugin_ref",
+            "outputs_exposed"
+          ],
+          "properties": {
+            "plugin_ref": {
+              "type": "object",
+              "description": "rule_type=script_plugin 时的受控计算插件引用；插件须在注册表中版本化并经代码审计（01 §3.1）",
+              "required": [
+                "module",
+                "entry_func"
+              ],
+              "properties": {
+                "module": {
+                  "type": "string",
+                  "description": "白名单包内模块路径，如 reliability_calc.capacitors.ecap_arrhenius_v1"
+                },
+                "entry_func": {
+                  "type": "string"
+                },
+                "params": {
+                  "type": "object",
+                  "description": "插件固定参数（如寿命倍增温度、安全系数）；来源须为 A/B 级证据或标注默认基线"
+                },
+                "digest": {
+                  "type": "string",
+                  "description": "插件内容哈希（sha256），跨版本重算对齐依据"
+                },
+                "verdict_expr": {
+                  "type": "string",
+                  "description": "判定表达式（DSL 语法，可引用 outputs_exposed 与 inputs 变量）：求值真=PASS。消除执行器硬编码判定语义（复审 C-1）"
+                }
+              }
+            },
+            "outputs_exposed": {
+              "type": "array",
+              "description": "script_plugin 暴露给报告/后续比较的输出变量，逐个带单位与量性质（02 §2.2；复审 P1-7）",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "unit",
+                  "type"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "description": "须在 unit_dictionary.yaml 中可归一"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "number",
+                      "string",
+                      "boolean"
+                    ]
+                  },
+                  "quantity_kind": {
+                    "type": "string",
+                    "enum": [
+                      "absolute",
+                      "delta"
+                    ],
+                    "description": "温度类必填"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "allOf": [
-    {
-      "if": {
-        "properties": {
-          "rule_type": {
-            "const": "declarative_expr"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "expression"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "rule_type": {
-            "const": "lookup_curve"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "curve_eval"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "rule_type": {
-            "const": "script_plugin"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "plugin_ref",
-          "outputs_exposed"
-        ]
-      }
-    },
     {
       "if": {
         "properties": {

@@ -1,0 +1,3157 @@
+- rule_id: ELEC-RES-PWR-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 厚膜电阻稳态功耗降额审查
+  intent: 检查电阻稳态耗散功率降额比
+  applicability: &id001
+    component_category: Resistor
+  inputs:
+  - name: power_dissipation
+    unit: W
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_power_70c
+    unit: W
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: derating_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: &id002 []
+  expression_or_payload:
+    expression: (power_dissipation / rated_power_70c) <= derating_ratio_limit
+  thresholds:
+    limit:
+      value: 0.5
+      unit: W
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 检查电阻稳态耗散功率降额比
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-PWR-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 厚膜电阻稳态功耗降额审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      power_dissipation: 0.4
+      rated_power_70c: 0.4
+      derating_ratio_limit: 0.4
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      power_dissipation: 0.5
+      rated_power_70c: 0.5
+      derating_ratio_limit: 0.5
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      power_dissipation: 0.75
+      rated_power_70c: 0.75
+      derating_ratio_limit: 0.75
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-RES-VOLT-002
+  rule_type: declarative_expr
+  domain: derating
+  title: 电阻端电压降额审查
+  intent: 检查电阻端电压不超过额定电压的降额限值
+  applicability:
+    component_category: Resistor
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: voltage_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (operating_voltage / rated_voltage) <= voltage_ratio_limit
+  thresholds:
+    limit:
+      value: 0.75
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 检查电阻端电压不超过额定电压的降额限值
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-VOLT-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电阻端电压降额审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.6000000000000001
+      rated_voltage: 0.6000000000000001
+      voltage_ratio_limit: 0.6000000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.75
+      rated_voltage: 0.75
+      voltage_ratio_limit: 0.75
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 1.125
+      rated_voltage: 1.125
+      voltage_ratio_limit: 1.125
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-RES-TEMP-003
+  rule_type: declarative_expr
+  domain: derating
+  title: 电阻环境温度上限审查
+  intent: 检查电阻环境温度不超过额定环境温度
+  applicability:
+    component_category: Resistor
+  inputs:
+  - name: local_ambient_temp
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: max_ambient_temp
+    unit: degC
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: local_ambient_temp <= max_ambient_temp
+  thresholds:
+    limit:
+      value: 85.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 检查电阻环境温度不超过额定环境温度
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-TEMP-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电阻环境温度上限审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      local_ambient_temp: 68.0
+      max_ambient_temp: 68.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      local_ambient_temp: 85.0
+      max_ambient_temp: 85.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      local_ambient_temp: 127.5
+      max_ambient_temp: 127.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-RES-PULSE-004
+  rule_type: declarative_expr
+  domain: derating
+  title: 电阻脉冲负荷提示
+  intent: 脉冲功率超过稳态额定需确认脉冲曲线
+  applicability:
+    component_category: Resistor
+  inputs:
+  - name: peak_power
+    unit: W
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_power_70c
+    unit: W
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: pulse_ratio_hint
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (peak_power / rated_power_70c) <= pulse_ratio_hint
+  thresholds:
+    limit:
+      value: 2.0
+      unit: W
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 脉冲功率超过稳态额定需确认脉冲曲线
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-PULSE-004
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电阻脉冲负荷提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      peak_power: 1.6
+      rated_power_70c: 1.6
+      pulse_ratio_hint: 1.6
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      peak_power: 2.0
+      rated_power_70c: 2.0
+      pulse_ratio_hint: 2.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      peak_power: 3.0
+      rated_power_70c: 3.0
+      pulse_ratio_hint: 3.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-RES-PWR-HR-005
+  rule_type: declarative_expr
+  domain: derating
+  title: 高可靠电阻功耗降额加严
+  intent: 高可靠性产品的电阻降额加严到 40%
+  applicability:
+    component_category: Resistor
+    product_grade:
+    - high_reliability
+  inputs:
+  - name: power_dissipation
+    unit: W
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_power_70c
+    unit: W
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: derating_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (power_dissipation / rated_power_70c) <= derating_ratio_limit
+  thresholds:
+    limit:
+      value: 0.4
+      unit: W
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 高可靠性产品的电阻降额加严到 40%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-PWR-HR-005
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 高可靠电阻功耗降额加严
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      power_dissipation: 0.32000000000000006
+      rated_power_70c: 0.32000000000000006
+      derating_ratio_limit: 0.32000000000000006
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      power_dissipation: 0.4
+      rated_power_70c: 0.4
+      derating_ratio_limit: 0.4
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      power_dissipation: 0.6000000000000001
+      rated_power_70c: 0.6000000000000001
+      derating_ratio_limit: 0.6000000000000001
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-MLCC-DCBIAS-001
+  rule_type: declarative_expr
+  domain: derating
+  title: MLCC 直流偏压降容提示
+  intent: 检查标称容量是否已按偏压衰减核减（需偏压曲线）
+  applicability:
+    component_category: Capacitor
+    sub_category: MLCC
+  inputs:
+  - name: capacitance_at_bias
+    unit: uF
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: required_min_capacitance
+    unit: uF
+    required: true
+    source: OperatingProfile
+    quantity_kind: absolute
+  preconditions:
+  - expr: capacitance_at_bias > 0
+  expression_or_payload:
+    expression: capacitance_at_bias >= required_min_capacitance
+  thresholds: null
+  severity: high
+  rationale: 检查标称容量是否已按偏压衰减核减（需偏压曲线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-MLCC-DCBIAS-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MLCC 直流偏压降容提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 插件数值回归（占位，接插件后补手算基准）
+    kind: normal
+    inputs:
+      capacitance_at_bias: 0
+      required_min_capacitance: 0
+    expected_status: PASS
+  - name: 异常输入（非数值）
+    kind: invalid
+    inputs:
+      capacitance_at_bias: not-a-number
+      required_min_capacitance: not-a-number
+    expected_status: ERROR
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-MLCC-VOLT-002
+  rule_type: declarative_expr
+  domain: derating
+  title: MLCC 额定电压降额审查
+  intent: MLCC 工作电压不超过额定的 60%（行业常见基线）
+  applicability: &id003
+    component_category: Capacitor
+    sub_category: MLCC
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: voltage_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: &id004 []
+  expression_or_payload:
+    expression: (operating_voltage / rated_voltage) <= voltage_ratio_limit
+  thresholds:
+    limit:
+      value: 0.6
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: MLCC 工作电压不超过额定的 60%（行业常见基线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-MLCC-VOLT-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MLCC 额定电压降额审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.48
+      rated_voltage: 0.48
+      voltage_ratio_limit: 0.48
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.6
+      rated_voltage: 0.6
+      voltage_ratio_limit: 0.6
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 0.8999999999999999
+      rated_voltage: 0.8999999999999999
+      voltage_ratio_limit: 0.8999999999999999
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-MLCC-TEMP-003
+  rule_type: declarative_expr
+  domain: derating
+  title: MLCC 温度上限审查
+  intent: 环境温度不超过额定温度
+  applicability:
+    component_category: Capacitor
+    sub_category: MLCC
+  inputs:
+  - name: local_ambient_temp
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: max_temp
+    unit: degC
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: local_ambient_temp <= max_temp
+  thresholds:
+    limit:
+      value: 85.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 环境温度不超过额定温度
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-MLCC-TEMP-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MLCC 温度上限审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      local_ambient_temp: 68.0
+      max_temp: 68.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      local_ambient_temp: 85.0
+      max_temp: 85.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      local_ambient_temp: 127.5
+      max_temp: 127.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-MLCC-PIEZO-004
+  rule_type: declarative_expr
+  domain: derating
+  title: MLCC 压电效应微振提示
+  intent: 高介电常数 MLCC 在纹波电压下可能产生可闻噪声/微振——定性提示
+  applicability:
+    component_category: Capacitor
+    sub_category: MLCC
+    dielectric:
+    - X5R
+    - X7R
+  inputs:
+  - name: ripple_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: ripple_hint
+    unit: V
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: ripple_voltage <= ripple_hint
+  thresholds:
+    limit:
+      value: 0.5
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: low
+  rationale: 高介电常数 MLCC 在纹波电压下可能产生可闻噪声/微振——定性提示
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-MLCC-PIEZO-004
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MLCC 压电效应微振提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      ripple_voltage: 0.4
+      ripple_hint: 0.4
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      ripple_voltage: 0.5
+      ripple_hint: 0.5
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      ripple_voltage: 0.75
+      ripple_hint: 0.75
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-ECAP-RIPPLE-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 铝电解电容纹波电流降额
+  intent: 纹波电流不超过额定纹波的 80%
+  applicability:
+    component_category: Capacitor
+    sub_category: Aluminum_Electrolytic
+  inputs:
+  - name: ripple_current_rms
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_ripple_current
+    unit: A
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: ripple_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (ripple_current_rms / rated_ripple_current) <= ripple_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 纹波电流不超过额定纹波的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-ECAP-RIPPLE-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 铝电解电容纹波电流降额
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      ripple_current_rms: 0.6400000000000001
+      rated_ripple_current: 0.6400000000000001
+      ripple_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      ripple_current_rms: 0.8
+      rated_ripple_current: 0.8
+      ripple_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      ripple_current_rms: 1.2000000000000002
+      rated_ripple_current: 1.2000000000000002
+      ripple_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-ECAP-TEMP-002
+  rule_type: declarative_expr
+  domain: derating
+  title: 铝电解电容环境温度上限
+  intent: 环境温度不超过额定温度（105℃/2000h 类）
+  applicability:
+    component_category: Capacitor
+    sub_category: Aluminum_Electrolytic
+  inputs:
+  - name: local_ambient_temp
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_max_temp
+    unit: degC
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: local_ambient_temp <= rated_max_temp
+  thresholds:
+    limit:
+      value: 105.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 环境温度不超过额定温度（105℃/2000h 类）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-ECAP-TEMP-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 铝电解电容环境温度上限
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      local_ambient_temp: 84.0
+      rated_max_temp: 84.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      local_ambient_temp: 105.0
+      rated_max_temp: 105.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      local_ambient_temp: 157.5
+      rated_max_temp: 157.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-ECAP-VOLT-003
+  rule_type: declarative_expr
+  domain: derating
+  title: 铝电解电容额定电压降额
+  intent: 工作电压不超过额定的 90%
+  applicability:
+    component_category: Capacitor
+    sub_category: Aluminum_Electrolytic
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: voltage_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (operating_voltage / rated_voltage) <= voltage_ratio_limit
+  thresholds:
+    limit:
+      value: 0.9
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 工作电压不超过额定的 90%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-ECAP-VOLT-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 铝电解电容额定电压降额
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.7200000000000001
+      rated_voltage: 0.7200000000000001
+      voltage_ratio_limit: 0.7200000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.9
+      rated_voltage: 0.9
+      voltage_ratio_limit: 0.9
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 1.35
+      rated_voltage: 1.35
+      voltage_ratio_limit: 1.35
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-MOS-VDS-001
+  rule_type: declarative_expr
+  domain: power
+  title: MOSFET VDS 降额审查
+  intent: 工作 VDS 峰值不超过额定的 80%
+  applicability: &id005
+    component_category: MOSFET
+  inputs:
+  - name: peak_vds
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_vds
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: vds_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: &id006 []
+  expression_or_payload:
+    expression: (peak_vds / rated_vds) <= vds_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 工作 VDS 峰值不超过额定的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-MOS-VDS-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MOSFET VDS 降额审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      peak_vds: 0.6400000000000001
+      rated_vds: 0.6400000000000001
+      vds_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      peak_vds: 0.8
+      rated_vds: 0.8
+      vds_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      peak_vds: 1.2000000000000002
+      rated_vds: 1.2000000000000002
+      vds_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-MOS-ID-002
+  rule_type: declarative_expr
+  domain: power
+  title: MOSFET 导通电流降额
+  intent: 连续电流不超过额定的 80%
+  applicability:
+    component_category: MOSFET
+  inputs:
+  - name: operating_current
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_id
+    unit: A
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: id_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (operating_current / rated_id) <= id_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 连续电流不超过额定的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-MOS-ID-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MOSFET 导通电流降额
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_current: 0.6400000000000001
+      rated_id: 0.6400000000000001
+      id_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_current: 0.8
+      rated_id: 0.8
+      id_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_current: 1.2000000000000002
+      rated_id: 1.2000000000000002
+      id_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-MOS-TJ-003
+  rule_type: declarative_expr
+  domain: power
+  title: MOSFET 结温上限提示
+  intent: 结温估算超过 100℃ 提示散热复核（精确值需热阻链计算）
+  applicability:
+    component_category: MOSFET
+  inputs:
+  - name: tj_estimated
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: tj_limit
+    unit: degC
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: tj_estimated <= tj_limit
+  thresholds:
+    limit:
+      value: 100.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 结温估算超过 100℃ 提示散热复核（精确值需热阻链计算）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-MOS-TJ-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MOSFET 结温上限提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      tj_estimated: 80.0
+      tj_limit: 80.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      tj_estimated: 100.0
+      tj_limit: 100.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      tj_estimated: 150.0
+      tj_limit: 150.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-MOS-GATE-004
+  rule_type: declarative_expr
+  domain: power
+  title: MOSFET 栅极电压范围审查
+  intent: 栅极驱动电压在额定范围内
+  applicability:
+    component_category: MOSFET
+  inputs:
+  - name: gate_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: vg_max_abs
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: gate_voltage <= vg_max_abs
+  thresholds:
+    limit:
+      value: 20.0
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 栅极驱动电压在额定范围内
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-MOS-GATE-004
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MOSFET 栅极电压范围审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      gate_voltage: 16.0
+      vg_max_abs: 16.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      gate_voltage: 20.0
+      vg_max_abs: 20.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      gate_voltage: 30.0
+      vg_max_abs: 30.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: CONN-CURR-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 连接器电流降额
+  intent: 连接器每触点电流不超过额定的 70%
+  applicability: &id009
+    component_category: Connector
+  inputs:
+  - name: current_per_pin
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_current
+    unit: A
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: current_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: &id010 []
+  expression_or_payload:
+    expression: (current_per_pin / rated_current) <= current_ratio_limit
+  thresholds:
+    limit:
+      value: 0.7
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 连接器每触点电流不超过额定的 70%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-CONN-CURR-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 连接器电流降额
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      current_per_pin: 0.5599999999999999
+      rated_current: 0.5599999999999999
+      current_ratio_limit: 0.5599999999999999
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      current_per_pin: 0.7
+      rated_current: 0.7
+      current_ratio_limit: 0.7
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      current_per_pin: 1.0499999999999998
+      rated_current: 1.0499999999999998
+      current_ratio_limit: 1.0499999999999998
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: CONN-TEMP-002
+  rule_type: declarative_expr
+  domain: derating
+  title: 连接器温升审查
+  intent: 连接器温升不超过规格限值
+  applicability:
+    component_category: Connector
+  inputs:
+  - name: temp_rise
+    unit: K
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: temp_rise_limit
+    unit: K
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: temp_rise <= temp_rise_limit
+  thresholds:
+    limit:
+      value: 30.0
+      unit: K
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 连接器温升不超过规格限值
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-CONN-TEMP-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 连接器温升审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      temp_rise: 24.0
+      temp_rise_limit: 24.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      temp_rise: 30.0
+      temp_rise_limit: 30.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      temp_rise: 45.0
+      temp_rise_limit: 45.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: CONN-CYCLE-003
+  rule_type: declarative_expr
+  domain: derating
+  title: 连接器插拔寿命余量
+  intent: 预期插拔次数不超过额定寿命的 80%
+  applicability:
+    component_category: Connector
+  inputs:
+  - name: expected_mating_cycles
+    unit: cycles
+    required: true
+    source: OperatingProfile
+    quantity_kind: absolute
+  - name: rated_mating_cycles
+    unit: cycles
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: cycle_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (expected_mating_cycles / rated_mating_cycles) <= cycle_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: cycles
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 预期插拔次数不超过额定寿命的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-CONN-CYCLE-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 连接器插拔寿命余量
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      expected_mating_cycles: 0.6400000000000001
+      rated_mating_cycles: 0.6400000000000001
+      cycle_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      expected_mating_cycles: 0.8
+      rated_mating_cycles: 0.8
+      cycle_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      expected_mating_cycles: 1.2000000000000002
+      rated_mating_cycles: 1.2000000000000002
+      cycle_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: BATT-VOLT-001
+  rule_type: declarative_expr
+  domain: power
+  title: 电池电压窗口审查
+  intent: 电池工作电压在保护板电压窗口内
+  applicability: &id007
+    component_category: Battery
+  inputs:
+  - name: cell_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: ovp_threshold
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: uvp_threshold
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: &id008 []
+  expression_or_payload:
+    expression: (cell_voltage < ovp_threshold) and (cell_voltage > uvp_threshold)
+  thresholds:
+    limit:
+      value: 4.25
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 电池工作电压在保护板电压窗口内
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-BATT-VOLT-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电池电压窗口审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      cell_voltage: 3.4000000000000004
+      ovp_threshold: 3.4000000000000004
+      uvp_threshold: 3.4000000000000004
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      cell_voltage: 4.25
+      ovp_threshold: 4.25
+      uvp_threshold: 4.25
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      cell_voltage: 6.375
+      ovp_threshold: 6.375
+      uvp_threshold: 6.375
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: BATT-CRATE-002
+  rule_type: declarative_expr
+  domain: power
+  title: 电池充放电倍率审查
+  intent: 充放电倍率不超过额定倍率的 80%
+  applicability:
+    component_category: Battery
+  inputs:
+  - name: charge_c_rate
+    unit: ratio
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_c_rate
+    unit: ratio
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: crate_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (charge_c_rate / rated_c_rate) <= crate_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: ratio
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 充放电倍率不超过额定倍率的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-BATT-CRATE-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电池充放电倍率审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      charge_c_rate: 0.6400000000000001
+      rated_c_rate: 0.6400000000000001
+      crate_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      charge_c_rate: 0.8
+      rated_c_rate: 0.8
+      crate_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      charge_c_rate: 1.2000000000000002
+      rated_c_rate: 1.2000000000000002
+      crate_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: BATT-TEMP-003
+  rule_type: declarative_expr
+  domain: power
+  title: 电池温度窗口审查（充电）
+  intent: 充电时电池温度在允许窗口内（0-45℃ 行业常见基线）
+  applicability:
+    component_category: Battery
+    mode:
+    - charging
+  inputs:
+  - name: battery_temp
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: charge_temp_min
+    unit: degC
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  - name: charge_temp_max
+    unit: degC
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (battery_temp >= charge_temp_min) and (battery_temp <= charge_temp_max)
+  thresholds:
+    limit:
+      value: 45.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 充电时电池温度在允许窗口内（0-45℃ 行业常见基线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-BATT-TEMP-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电池温度窗口审查（充电）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      battery_temp: 36.0
+      charge_temp_min: 36.0
+      charge_temp_max: 36.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      battery_temp: 45.0
+      charge_temp_min: 45.0
+      charge_temp_max: 45.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      battery_temp: 67.5
+      charge_temp_min: 67.5
+      charge_temp_max: 67.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: BATT-CYCLE-004
+  rule_type: declarative_expr
+  domain: power
+  title: 电池循环寿命余量
+  intent: 预期循环次数不超过额定循环寿命的 80%
+  applicability:
+    component_category: Battery
+  inputs:
+  - name: expected_cycles
+    unit: cycles
+    required: true
+    source: OperatingProfile
+    quantity_kind: absolute
+  - name: rated_cycle_life
+    unit: cycles
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: cycle_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (expected_cycles / rated_cycle_life) <= cycle_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: cycles
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 预期循环次数不超过额定循环寿命的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-BATT-CYCLE-004
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电池循环寿命余量
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      expected_cycles: 0.6400000000000001
+      rated_cycle_life: 0.6400000000000001
+      cycle_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      expected_cycles: 0.8
+      rated_cycle_life: 0.8
+      cycle_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      expected_cycles: 1.2000000000000002
+      rated_cycle_life: 1.2000000000000002
+      cycle_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: XTAL-DRIVE-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 晶振驱动功率审查
+  intent: 晶振驱动功率不超过规格上限
+  applicability:
+    component_category: Crystal
+  inputs:
+  - name: drive_power
+    unit: uW
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: drive_power_max
+    unit: uW
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: drive_power <= drive_power_max
+  thresholds:
+    limit:
+      value: 100.0
+      unit: uW
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 晶振驱动功率不超过规格上限
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-XTAL-DRIVE-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 晶振驱动功率审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      drive_power: 80.0
+      drive_power_max: 80.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      drive_power: 100.0
+      drive_power_max: 100.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      drive_power: 150.0
+      drive_power_max: 150.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: XTAL-CL-002
+  rule_type: declarative_expr
+  domain: derating
+  title: 晶振负载电容匹配提示
+  intent: 外接负载电容与规格 CL 匹配性提示（需振荡器设计核对）
+  applicability:
+    component_category: Crystal
+  inputs:
+  - name: cl_deviation_pct
+    unit: percent
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: cl_deviation_limit
+    unit: percent
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: cl_deviation_pct <= cl_deviation_limit
+  thresholds:
+    limit:
+      value: 10.0
+      unit: percent
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: low
+  rationale: 外接负载电容与规格 CL 匹配性提示（需振荡器设计核对）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-XTAL-CL-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 晶振负载电容匹配提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      cl_deviation_pct: 8.0
+      cl_deviation_limit: 8.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      cl_deviation_pct: 10.0
+      cl_deviation_limit: 10.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      cl_deviation_pct: 15.0
+      cl_deviation_limit: 15.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PCB-TRACE-001
+  rule_type: declarative_expr
+  domain: derating
+  title: PCB 线宽载流审查
+  intent: 走线电流不超过按铜厚/线宽计算的载流限（IPC-2152 简化基线）
+  applicability: &id011
+    item_type: pcb_trace
+  inputs:
+  - name: trace_current
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: trace_current_limit
+    unit: A
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: &id012 []
+  expression_or_payload:
+    expression: trace_current <= trace_current_limit
+  thresholds:
+    limit:
+      value: 2.0
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 走线电流不超过按铜厚/线宽计算的载流限（IPC-2152 简化基线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PCB-TRACE-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: PCB 线宽载流审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      trace_current: 1.6
+      trace_current_limit: 1.6
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      trace_current: 2.0
+      trace_current_limit: 2.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      trace_current: 3.0
+      trace_current_limit: 3.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PCB-CLEAR-002
+  rule_type: declarative_expr
+  domain: derating
+  title: PCB 绝缘间距审查
+  intent: 爬电/间隙距离满足电压对应的最小间距
+  applicability:
+    item_type: pcb_clearance
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: min_clearance_mm
+    unit: mm
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  - name: actual_clearance_mm
+    unit: mm
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (actual_clearance_mm >= min_clearance_mm) and (operating_voltage >
+      0)
+  thresholds:
+    limit:
+      value: 0.5
+      unit: mm
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 爬电/间隙距离满足电压对应的最小间距
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PCB-CLEAR-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: PCB 绝缘间距审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.4
+      min_clearance_mm: 0.4
+      actual_clearance_mm: 0.4
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.5
+      min_clearance_mm: 0.5
+      actual_clearance_mm: 0.5
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 0.75
+      min_clearance_mm: 0.75
+      actual_clearance_mm: 0.75
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PCB-WARP-003
+  rule_type: declarative_expr
+  domain: derating
+  title: PCB 板弯定性提示
+  intent: 板厚/支撑不足的定性风险提示（定量需仿真）
+  applicability:
+    item_type: pcb_warp
+  inputs:
+  - name: board_span_mm
+    unit: mm
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: board_thickness_mm
+    unit: mm
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: warp_hint_ratio
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (board_span_mm / board_thickness_mm) <= warp_hint_ratio
+  thresholds:
+    limit:
+      value: 150.0
+      unit: mm
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: low
+  rationale: 板厚/支撑不足的定性风险提示（定量需仿真）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PCB-WARP-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: PCB 板弯定性提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      board_span_mm: 120.0
+      board_thickness_mm: 120.0
+      warp_hint_ratio: 120.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      board_span_mm: 150.0
+      board_thickness_mm: 150.0
+      warp_hint_ratio: 150.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      board_span_mm: 225.0
+      board_thickness_mm: 225.0
+      warp_hint_ratio: 225.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PCB-CAF-004
+  rule_type: declarative_expr
+  domain: derating
+  title: PCB CAF 定性提示
+  intent: 高湿高偏压场景的 CAF 风险提示（孔间距/电压梯度）
+  applicability:
+    item_type: pcb_caf
+  inputs:
+  - name: hole_to_hole_voltage_gradient
+    unit: V_per_mm
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: caf_hint_gradient
+    unit: V_per_mm
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: hole_to_hole_voltage_gradient <= caf_hint_gradient
+  thresholds:
+    limit:
+      value: 20.0
+      unit: V_per_mm
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 高湿高偏压场景的 CAF 风险提示（孔间距/电压梯度）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PCB-CAF-004
+    level: C
+    publisher: 行业常见基线（草案）
+    title: PCB CAF 定性提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      hole_to_hole_voltage_gradient: 16.0
+      caf_hint_gradient: 16.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      hole_to_hole_voltage_gradient: 20.0
+      caf_hint_gradient: 20.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      hole_to_hole_voltage_gradient: 30.0
+      caf_hint_gradient: 30.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-SURGE-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 电源输入浪涌应力审查
+  intent: 输入浪涌电压不超过防护器件钳位与后级耐压
+  applicability:
+    item_type: power_input
+  inputs:
+  - name: surge_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: clamp_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: downstream_rating
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (surge_voltage <= clamp_voltage) and (clamp_voltage < downstream_rating)
+  thresholds:
+    limit:
+      value: 40.0
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 输入浪涌电压不超过防护器件钳位与后级耐压
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-SURGE-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电源输入浪涌应力审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      surge_voltage: 32.0
+      clamp_voltage: 32.0
+      downstream_rating: 32.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      surge_voltage: 40.0
+      clamp_voltage: 40.0
+      downstream_rating: 40.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      surge_voltage: 60.0
+      clamp_voltage: 60.0
+      downstream_rating: 60.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-SHORT-002
+  rule_type: declarative_expr
+  domain: derating
+  title: 电源输出短路保护审查
+  intent: 输出短路时保护器件工作在安全区
+  applicability:
+    item_type: power_output
+  inputs:
+  - name: short_circuit_current
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: protection_rating
+    unit: A
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: short_circuit_current <= protection_rating
+  thresholds:
+    limit:
+      value: 5.0
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 输出短路时保护器件工作在安全区
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-SHORT-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电源输出短路保护审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      short_circuit_current: 4.0
+      protection_rating: 4.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      short_circuit_current: 5.0
+      protection_rating: 5.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      short_circuit_current: 7.5
+      protection_rating: 7.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-OT-003
+  rule_type: declarative_expr
+  domain: derating
+  title: 电源过温保护审查
+  intent: 过温保护阈值低于最高安全温度
+  applicability:
+    item_type: power_protection
+  inputs:
+  - name: otp_threshold
+    unit: degC
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: max_safe_temp
+    unit: degC
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: otp_threshold <= max_safe_temp
+  thresholds:
+    limit:
+      value: 105.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 过温保护阈值低于最高安全温度
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-OT-003
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电源过温保护审查
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      otp_threshold: 84.0
+      max_safe_temp: 84.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      otp_threshold: 105.0
+      max_safe_temp: 105.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      otp_threshold: 157.5
+      max_safe_temp: 157.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ESD-PATH-001
+  rule_type: declarative_expr
+  domain: derating
+  title: ESD 泄放路径存在性提示
+  intent: 接口器件应有 ESD 泄放路径（布局存在性人工核对项的数字化占位）
+  applicability:
+    item_type: esd_interface
+  inputs:
+  - name: esd_device_present
+    unit: dimensionless
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: esd_device_present >= 1
+  thresholds:
+    limit:
+      value: 1.0
+      unit: dimensionless
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 接口器件应有 ESD 泄放路径（布局存在性人工核对项的数字化占位）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ESD-PATH-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: ESD 泄放路径存在性提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      esd_device_present: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      esd_device_present: 1.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      esd_device_present: 1.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: EMI-RETURN-002
+  rule_type: declarative_expr
+  domain: derating
+  title: EMI 回流路径完整性提示
+  intent: 高速回流路径连续性（人工核对项数字化占位）
+  applicability:
+    item_type: emi_return
+  inputs:
+  - name: return_path_reviewed
+    unit: dimensionless
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: return_path_reviewed >= 1
+  thresholds:
+    limit:
+      value: 1.0
+      unit: dimensionless
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: medium
+  rationale: 高速回流路径连续性（人工核对项数字化占位）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-EMI-RETURN-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: EMI 回流路径完整性提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      return_path_reviewed: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      return_path_reviewed: 1.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      return_path_reviewed: 1.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: SEMI-TJ-001
+  rule_type: declarative_expr
+  domain: power
+  title: IC 结温估算提示
+  intent: IC 结温估算不超过降额上限（典型 105℃）
+  applicability:
+    component_category: IC
+  inputs:
+  - name: tj_estimated
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: tj_derating_limit
+    unit: degC
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: tj_estimated <= tj_derating_limit
+  thresholds:
+    limit:
+      value: 105.0
+      unit: degC
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: IC 结温估算不超过降额上限（典型 105℃）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-SEMI-TJ-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: IC 结温估算提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      tj_estimated: 84.0
+      tj_derating_limit: 84.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      tj_estimated: 105.0
+      tj_derating_limit: 105.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      tj_estimated: 157.5
+      tj_derating_limit: 157.5
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: SEMI-DERATE-002
+  rule_type: declarative_expr
+  domain: power
+  title: IC 供电电压降额
+  intent: IC 供电电压不超过绝对最大额定的 90%
+  applicability:
+    component_category: IC
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: abs_max_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: voltage_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: (operating_voltage / abs_max_voltage) <= voltage_ratio_limit
+  thresholds:
+    limit:
+      value: 0.9
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: IC 供电电压不超过绝对最大额定的 90%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-SEMI-DERATE-002
+    level: C
+    publisher: 行业常见基线（草案）
+    title: IC 供电电压降额
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.7200000000000001
+      abs_max_voltage: 0.7200000000000001
+      voltage_ratio_limit: 0.7200000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.9
+      abs_max_voltage: 0.9
+      voltage_ratio_limit: 0.9
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 1.35
+      abs_max_voltage: 1.35
+      voltage_ratio_limit: 1.35
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: HV-ISO-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 高压隔离距离提示
+  intent: 隔离带电压梯度不超过 CAF/爬电基线
+  applicability:
+    item_type: hv_isolation
+  inputs:
+  - name: isolation_voltage_gradient
+    unit: V_per_mm
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: iso_hint_gradient
+    unit: V_per_mm
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    expression: isolation_voltage_gradient <= iso_hint_gradient
+  thresholds:
+    limit:
+      value: 20.0
+      unit: V_per_mm
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 隔离带电压梯度不超过 CAF/爬电基线
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-HV-ISO-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 高压隔离距离提示
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      isolation_voltage_gradient: 16.0
+      iso_hint_gradient: 16.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      isolation_voltage_gradient: 20.0
+      iso_hint_gradient: 20.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      isolation_voltage_gradient: 30.0
+      iso_hint_gradient: 30.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-ECAP-LIFE-001
+  rule_type: script_plugin
+  domain: derating
+  title: 铝电解电容预期寿命与产品目标比较
+  intent: 按制造商寿命倍增模型计算预期寿命并与产品目标寿命比较（script_plugin）
+  applicability:
+    component_category: Capacitor
+    sub_category: Aluminum_Electrolytic
+  inputs:
+  - name: ripple_current_rms
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: esr_at_freq
+    unit: ohm
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: thermal_resistance_ca
+    unit: degC_per_W
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: local_ambient_temp
+    unit: degC
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_max_temp
+    unit: degC
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: rated_endurance_hours
+    unit: h
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: product_lifetime_target
+    unit: h
+    required: true
+    source: OperatingProfile
+    quantity_kind: absolute
+  preconditions: []
+  expression_or_payload:
+    plugin_ref:
+      module: reliability_calc.capacitors.ecap_arrhenius_v1
+      entry_func: evaluate_ecap_lifetime
+      digest: sha256:local-dev
+      verdict_expr: predicted_life_hours >= product_lifetime_target * life_safety_factor
+    outputs_exposed:
+    - name: core_temp_est
+      unit: degC
+      type: number
+      quantity_kind: absolute
+    - name: predicted_life_hours
+      unit: h
+      type: number
+      quantity_kind: absolute
+  thresholds: null
+  severity: high
+  rationale: 按制造商寿命倍增模型计算预期寿命并与产品目标寿命比较（script_plugin）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-ECAP-LIFE-001
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 铝电解电容预期寿命与产品目标比较
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 插件数值回归（占位，接插件后补手算基准）
+    kind: normal
+    inputs:
+      ripple_current_rms: 0
+      esr_at_freq: 0
+      thermal_resistance_ca: 0
+      local_ambient_temp: 0
+      rated_max_temp: 0
+      rated_endurance_hours: 0
+      product_lifetime_target: 0
+    expected_status: PASS
+  - name: 异常输入（非数值）
+    kind: invalid
+    inputs:
+      ripple_current_rms: not-a-number
+      esr_at_freq: not-a-number
+      thermal_resistance_ca: not-a-number
+      local_ambient_temp: not-a-number
+      rated_max_temp: not-a-number
+      rated_endurance_hours: not-a-number
+      product_lifetime_target: not-a-number
+    expected_status: ERROR
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-RES-PWR-101
+  rule_type: declarative_expr
+  domain: derating
+  title: 电阻功耗降额（工业工况变体）
+  intent: 检查电阻稳态耗散功率降额比
+  applicability: *id001
+  inputs:
+  - name: power_dissipation
+    unit: W
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_power_70c
+    unit: W
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: derating_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: *id002
+  expression_or_payload:
+    expression: (power_dissipation / rated_power_70c) <= derating_ratio_limit
+  thresholds:
+    limit:
+      value: 0.5
+      unit: W
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 检查电阻稳态耗散功率降额比
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-RES-PWR-101
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电阻功耗降额（工业工况变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      power_dissipation: 0.4
+      rated_power_70c: 0.4
+      derating_ratio_limit: 0.4
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      power_dissipation: 0.5
+      rated_power_70c: 0.5
+      derating_ratio_limit: 0.5
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      power_dissipation: 0.75
+      rated_power_70c: 0.75
+      derating_ratio_limit: 0.75
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: ELEC-MLCC-VOLT-102
+  rule_type: declarative_expr
+  domain: derating
+  title: MLCC 电压降额（工业工况变体）
+  intent: MLCC 工作电压不超过额定的 60%（行业常见基线）
+  applicability: *id003
+  inputs:
+  - name: operating_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_voltage
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: voltage_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: *id004
+  expression_or_payload:
+    expression: (operating_voltage / rated_voltage) <= voltage_ratio_limit
+  thresholds:
+    limit:
+      value: 0.6
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: MLCC 工作电压不超过额定的 60%（行业常见基线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-ELEC-MLCC-VOLT-102
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MLCC 电压降额（工业工况变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      operating_voltage: 0.48
+      rated_voltage: 0.48
+      voltage_ratio_limit: 0.48
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      operating_voltage: 0.6
+      rated_voltage: 0.6
+      voltage_ratio_limit: 0.6
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      operating_voltage: 0.8999999999999999
+      rated_voltage: 0.8999999999999999
+      voltage_ratio_limit: 0.8999999999999999
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PWR-MOS-VDS-103
+  rule_type: declarative_expr
+  domain: power
+  title: MOSFET VDS 降额（高温工况变体）
+  intent: 工作 VDS 峰值不超过额定的 80%
+  applicability: *id005
+  inputs:
+  - name: peak_vds
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_vds
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: vds_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: *id006
+  expression_or_payload:
+    expression: (peak_vds / rated_vds) <= vds_ratio_limit
+  thresholds:
+    limit:
+      value: 0.8
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 工作 VDS 峰值不超过额定的 80%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PWR-MOS-VDS-103
+    level: C
+    publisher: 行业常见基线（草案）
+    title: MOSFET VDS 降额（高温工况变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      peak_vds: 0.6400000000000001
+      rated_vds: 0.6400000000000001
+      vds_ratio_limit: 0.6400000000000001
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      peak_vds: 0.8
+      rated_vds: 0.8
+      vds_ratio_limit: 0.8
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      peak_vds: 1.2000000000000002
+      rated_vds: 1.2000000000000002
+      vds_ratio_limit: 1.2000000000000002
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: BATT-VOLT-104
+  rule_type: declarative_expr
+  domain: power
+  title: 电池电压窗口（低温工况变体）
+  intent: 电池工作电压在保护板电压窗口内
+  applicability: *id007
+  inputs:
+  - name: cell_voltage
+    unit: V
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: ovp_threshold
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: uvp_threshold
+    unit: V
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  preconditions: *id008
+  expression_or_payload:
+    expression: (cell_voltage < ovp_threshold) and (cell_voltage > uvp_threshold)
+  thresholds:
+    limit:
+      value: 4.25
+      unit: V
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: critical
+  rationale: 电池工作电压在保护板电压窗口内
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-BATT-VOLT-104
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 电池电压窗口（低温工况变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      cell_voltage: 3.4000000000000004
+      ovp_threshold: 3.4000000000000004
+      uvp_threshold: 3.4000000000000004
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      cell_voltage: 4.25
+      ovp_threshold: 4.25
+      uvp_threshold: 4.25
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      cell_voltage: 6.375
+      ovp_threshold: 6.375
+      uvp_threshold: 6.375
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: CONN-CURR-105
+  rule_type: declarative_expr
+  domain: derating
+  title: 连接器电流降额（高温工况变体）
+  intent: 连接器每触点电流不超过额定的 70%
+  applicability: *id009
+  inputs:
+  - name: current_per_pin
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: rated_current
+    unit: A
+    required: true
+    source: Component.rated_params
+    quantity_kind: absolute
+  - name: current_ratio_limit
+    unit: ratio
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: *id010
+  expression_or_payload:
+    expression: (current_per_pin / rated_current) <= current_ratio_limit
+  thresholds:
+    limit:
+      value: 0.7
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 连接器每触点电流不超过额定的 70%
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-CONN-CURR-105
+    level: C
+    publisher: 行业常见基线（草案）
+    title: 连接器电流降额（高温工况变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      current_per_pin: 0.5599999999999999
+      rated_current: 0.5599999999999999
+      current_ratio_limit: 0.5599999999999999
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      current_per_pin: 0.7
+      rated_current: 0.7
+      current_ratio_limit: 0.7
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      current_per_pin: 1.0499999999999998
+      rated_current: 1.0499999999999998
+      current_ratio_limit: 1.0499999999999998
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
+- rule_id: PCB-TRACE-106
+  rule_type: declarative_expr
+  domain: derating
+  title: PCB 载流（高温降额变体）
+  intent: 走线电流不超过按铜厚/线宽计算的载流限（IPC-2152 简化基线）
+  applicability: *id011
+  inputs:
+  - name: trace_current
+    unit: A
+    required: true
+    source: ComponentStress
+    quantity_kind: absolute
+  - name: trace_current_limit
+    unit: A
+    required: true
+    source: Thresholds
+    quantity_kind: absolute
+  preconditions: *id012
+  expression_or_payload:
+    expression: trace_current <= trace_current_limit
+  thresholds:
+    limit:
+      value: 2.0
+      unit: A
+      source_ref: 行业常见基线（C 级，待企业批准）
+  severity: high
+  rationale: 走线电流不超过按铜厚/线宽计算的载流限（IPC-2152 简化基线）
+  recommendation: 按企业降额规范与器件手册核对阈值后批准
+  evidence:
+  - evidence_id: EVD-DRAFT-PCB-TRACE-106
+    level: C
+    publisher: 行业常见基线（草案）
+    title: PCB 载流（高温降额变体）
+    version_date: '2026-11-22'
+    locator: 待补
+    limitations: 草案阈值，须企业批准后转 A/B 级
+  evidence_level: C
+  owner: 待指派
+  reviewer: 待指派
+  version: 0.1.0
+  status: draft
+  effective_date: '2026-11-22'
+  expiry_date: null
+  tests:
+  - name: 正常（阈值 80%）
+    kind: normal
+    inputs:
+      trace_current: 1.6
+      trace_current_limit: 1.6
+    expected_pass: true
+    expected_status: PASS
+  - name: 边界（恰达阈值）
+    kind: boundary
+    inputs:
+      trace_current: 2.0
+      trace_current_limit: 2.0
+    expected_pass: true
+    expected_status: PASS
+  - name: 超阈值判失败
+    kind: invalid
+    inputs:
+      trace_current: 3.0
+      trace_current_limit: 3.0
+    expected_pass: false
+    expected_status: FAIL
+  notes: G2-2 草案：thresholds 为行业常见基线（C 级），企业批准后转 A/B 级并升 published
