@@ -1,0 +1,441 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reliability.local/schemas/rule.schema.json",
+  "title": "Reliability Rule Definition",
+  "description": "AI电子硬件可靠性分析系统 - 规则定义机读 Schema。配套文档：02_可靠性规则与知识库规范 §2/§2.1。 V1.1-ER-r2：新增 rule_type 三分类（declarative_expr/lookup_curve/script_plugin）与对应执行配置。配套文档：02 §2.2、附件 rule_templates.yaml。",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "domain",
+    "title",
+    "intent",
+    "applicability",
+    "inputs",
+    "expression",
+    "severity",
+    "rationale",
+    "recommendation",
+    "evidence_level",
+    "owner",
+    "version",
+    "status",
+    "tests",
+    "rule_type"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,8}(-[A-Z0-9]+)*-[0-9]{3}$",
+      "description": "规则编号，格式 域-子域-序号，如 ELEC-CAP-DCBIAS-001"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "derating",
+        "pcb_pcba",
+        "power",
+        "esd_emi",
+        "thermal",
+        "dfmea",
+        "fa",
+        "dvpr"
+      ],
+      "description": "规则域，与基准集 domain 字段一致（03 §4）"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "intent": {
+      "type": "string",
+      "description": "规则意图的一句话人读说明"
+    },
+    "applicability": {
+      "type": "object",
+      "description": "适用范围；键为对象属性（如 component_category），值为匹配值或数组",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "array",
+          "number",
+          "boolean"
+        ]
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "unit",
+          "required"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "unit": {
+            "type": "string",
+            "description": "单位，须能在 unit_dictionary.yaml 中归一；无量纲用 dimensionless"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "description": "来源：bom / datasheet / operating_profile / manual_input"
+          }
+        }
+      }
+    },
+    "preconditions": {
+      "type": "string",
+      "description": "前置条件（人读）；机器可判定条件写入 applicability"
+    },
+    "expression": {
+      "type": "string",
+      "description": "受限 DSL 表达式，仅 rule_type=declarative_expr 必填。白名单：比较 > >= < <= == !=、逻辑 AND OR NOT、算术 + - * /、受限 IF。求值前 inputs 已按 unit_dictionary 归一为无量纲标量。变量名须在 inputs 中定义。lookup_curve 的表达式放 curve_eval.expression；script_plugin 不使用本字段。",
+      "maxLength": 500
+    },
+    "thresholds": {
+      "type": "object",
+      "description": "阈值及来源；数值必须来自 A/B 级证据",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value",
+          "unit",
+          "source_ref"
+        ],
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "source_ref": {
+            "type": "string",
+            "description": "指向 evidence 项的 evidence_id 或标准条款"
+          }
+        }
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info"
+      ],
+      "description": "critical/high 命中时触发人工复核（01 §7）"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "recommendation": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "level",
+          "publisher",
+          "title",
+          "version_date",
+          "locator"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "version_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "locator": {
+            "type": "string",
+            "description": "页码/章节/条款号"
+          },
+          "part_number": {
+            "type": "string"
+          },
+          "test_condition": {
+            "type": "string"
+          },
+          "sample_size": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "limitations": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence_level": {
+      "type": "string",
+      "enum": [
+        "A",
+        "A_or_B",
+        "B",
+        "B_or_C",
+        "C",
+        "D"
+      ],
+      "description": "本规则整体证据等级（最高依赖级）"
+    },
+    "owner": {
+      "type": "string",
+      "description": "领域 Owner"
+    },
+    "reviewer": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_review",
+        "tested",
+        "shadow",
+        "published",
+        "deprecated"
+      ]
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "expiry_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 3,
+      "description": "单测用例：至少正常、边界（阈值相等）、异常输入三类（02 §2.1）",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "inputs",
+          "expected"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "boundary",
+              "invalid",
+              "unit_conflict",
+              "plugin_numeric"
+            ]
+          },
+          "inputs": {
+            "type": "object"
+          },
+          "expected_pass": {
+            "type": "boolean",
+            "description": "规则判定通过与否；与 expected 逻辑判定一致"
+          },
+          "expected_status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL",
+              "SKIPPED_PRECONDITION",
+              "DATA_GAP",
+              "ERROR"
+            ],
+            "description": "期望执行状态；SKIPPED_PRECONDITION=前置条件不满足跳过"
+          },
+          "expected_outputs": {
+            "type": "object",
+            "description": "script_plugin 期望输出值（逐 outputs_exposed 变量）"
+          },
+          "tolerance_rel": {
+            "type": "number",
+            "description": "数值相对误差容差，默认 0.001（挂钩 03 §5 浮点口径）"
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "MISSING_INPUT",
+              "DIV_BY_ZERO",
+              "DIMENSION_MISMATCH",
+              "UNKNOWN_UNIT",
+              "TEMPERATURE_SCALE_AMBIGUOUS",
+              null
+            ]
+          }
+        }
+      }
+    },
+    "computed_service": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "需要模型计算（寿命公式等）时指向确定性计算服务名；此时 expression 只比较其输出与阈值"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "declarative_expr",
+        "lookup_curve",
+        "script_plugin"
+      ],
+      "description": "规则类型：declarative_expr=静态布尔/四则（DSL 流水线）；lookup_curve=二维曲线插值/包络（曲线插值引擎）；script_plugin=受控白名单计算插件。执行器见 01 §3.1，模板见 rule_templates.yaml"
+    },
+    "curve_eval": {
+      "type": "object",
+      "description": "rule_type=lookup_curve 时的插值与包络配置",
+      "required": [
+        "interpolation",
+        "expression"
+      ],
+      "properties": {
+        "interpolation": {
+          "type": "string",
+          "description": "插值方法，如 log_log_linear（双对数线性）"
+        },
+        "temp_derating_factor": {
+          "type": "string",
+          "description": "温度折减因子表达式（case_temp 为输入变量）"
+        },
+        "safety_margin_ratio": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "安全裕度系数：工作点须低于折减后极限的该比例"
+        },
+        "expression": {
+          "type": "string",
+          "description": "包络判定表达式；lookup_max_id(曲线表, x, y) 为引擎内置插值函数"
+        },
+        "curve_out_of_bounds": {
+          "type": "string",
+          "enum": [
+            "error",
+            "clamp"
+          ],
+          "description": "曲线边界外行为：报错或钳位；默认 error"
+        }
+      }
+    },
+    "plugin_ref": {
+      "type": "object",
+      "description": "rule_type=script_plugin 时的受控计算插件引用；插件须在注册表中版本化并经代码审计（01 §3.1）",
+      "required": [
+        "module",
+        "entry_func"
+      ],
+      "properties": {
+        "module": {
+          "type": "string",
+          "description": "白名单包内模块路径，如 reliability_calc.capacitors.ecap_arrhenius_v1"
+        },
+        "entry_func": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "description": "插件固定参数（如寿命倍增温度、安全系数）；来源须为 A/B 级证据或标注默认基线"
+        }
+      }
+    },
+    "outputs_exposed": {
+      "type": "array",
+      "description": "script_plugin 暴露给报告/后续比较的输出变量（如 core_temp_est、predicted_life_hours）",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "const": "declarative_expr"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "expression"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "const": "lookup_curve"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "curve_eval"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "const": "script_plugin"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "plugin_ref",
+          "outputs_exposed"
+        ]
+      }
+    }
+  ]
+}

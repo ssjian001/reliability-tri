@@ -1,0 +1,131 @@
+# AI电子硬件可靠性分析系统 - 分层规则标准模板 V1.0
+# 对应 02 §2.2 三类 rule_type；rule.schema.json 为机读约束。
+# 模板均为「示意级起点」：阈值必须来自具体料号手册/适用标准/企业规范（02 §2），不得把示例值当行业限值。
+
+# ========== 模板 1：declarative_expr（静态布尔/四则规则） ==========
+- rule_id: ELEC-RES-PWR-001
+  rule_type: declarative_expr
+  domain: derating
+  title: 厚膜片式电阻稳态功耗降额审查
+  intent: 检查电阻在工作环境下的稳态耗散功率是否满足降额要求
+  applicability:
+    component_category: Resistor
+    sub_category: Thick_Film_Chip
+  inputs:
+    - {name: power_dissipation, unit: W, required: true, source: ComponentStress}
+    - {name: rated_power_70c, unit: W, required: true, source: Component.rated_params}
+    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress}
+    - {name: derating_ratio_limit, unit: ratio, required: true, source: Thresholds}
+  preconditions:
+    - "local_ambient_temp <= 70"
+  expression: "(power_dissipation / rated_power_70c) <= derating_ratio_limit"
+  thresholds:
+    derating_ratio_limit:
+      default: 0.50
+      high_reliability: 0.40
+      source: "企业元器件降额规范 Q/XXX-2026 第4.2条"
+  severity: high
+  rationale: 电阻长期工作在接近额定功率下会导致阻值漂移、焊点热疲劳及基板碳化
+  recommendation: 更换更大封装尺寸（提高额定功率）或采用多颗电阻串并联分担功耗
+  evidence:
+    - {evidence_id: EVD-STD-012, page_or_section: "Section 4.2, Table 3"}
+  evidence_level: A
+  owner: "张工(器件工程)"
+  reviewer: "李工(可靠性负责人)"
+  version: 1.0.0
+  status: approved
+  effective_date: 2026-11-21
+  expiry_date: 2028-11-21
+  tests:
+    - name: 正常50%降额边界通过
+      inputs: {power_dissipation: 0.05, rated_power_70c: 0.1, local_ambient_temp: 55, derating_ratio_limit: 0.5}
+      expected_pass: true
+    - name: 超温条件不适用本规则（交由高温折减规则）
+      inputs: {power_dissipation: 0.04, rated_power_70c: 0.1, local_ambient_temp: 85, derating_ratio_limit: 0.5}
+      expected_status: SKIPPED_PRECONDITION
+
+# ========== 模板 2：lookup_curve（二维曲线插值/包络规则） ==========
+- rule_id: ELEC-MOS-SOA-002
+  rule_type: lookup_curve
+  domain: power
+  title: MOSFET 脉冲启动瞬间 SOA 安全工作区包络审查
+  intent: 验证电源热插拔或容性负载启动时，MOSFET 的 VDS-ID-脉冲宽度工作点是否落在厂商 SOA 曲线内
+  applicability:
+    component_category: MOSFET
+    operating_mode: [Linear_Mode, Inrush_Startup]
+  inputs:
+    - {name: peak_vds, unit: V, required: true, source: ComponentStress}
+    - {name: peak_id, unit: A, required: true, source: ComponentStress}
+    - {name: pulse_width_ms, unit: ms, required: true, source: ComponentStress}
+    - {name: case_temp, unit: degC, required: true, source: ComponentStress}
+    - {name: soa_curve_table, unit: table, required: true, source: Component.datasheet_curves}
+  preconditions:
+    - "soa_curve_table != null"
+  curve_eval:
+    interpolation: log_log_linear      # 双对数坐标线性插值（符合 SOA 曲线物理特性）
+    temp_derating_factor: "1 - (case_temp - 25) / (150 - 25)"
+    safety_margin_ratio: 0.80          # 工作点须低于折减后 SOA 极限电流的 80%
+    expression: "peak_id <= lookup_max_id(soa_curve_table, pulse_width_ms, peak_vds) * temp_derating_factor * safety_margin_ratio"
+  severity: critical
+  rationale: 线性区启动时局部热点集中（Spirito 效应），易引发二次击穿导致 MOSFET 短路烧毁
+  recommendation: 增大栅极电容减缓导通速度、选用 SOA 更宽的器件，或增加预充电限流电路
+  evidence:
+    - {evidence_id: EVD-DS-MOS882, page_or_section: "Fig.11 Maximum Safe Operating Area"}
+  evidence_level: A
+  owner: "王工(电源可靠性)"
+  reviewer: "李工(可靠性负责人)"
+  version: 1.0.0
+  status: approved
+  effective_date: 2026-11-21
+  expiry_date: 2027-11-21
+  tests:
+    - name: 10ms脉冲在25℃下处于80%包络内
+      inputs: {peak_vds: 24, peak_id: 4.5, pulse_width_ms: 10, case_temp: 25, soa_curve_table: MOCK_SOA_10A_AT_24V_10MS}
+      expected_pass: true
+
+# ========== 模板 3：script_plugin（受控计算插件规则） ==========
+- rule_id: ELEC-ECAP-LIFE-003
+  rule_type: script_plugin
+  domain: derating
+  title: 铝电解电容纹波温升与预期寿命评估
+  intent: 基于纹波电流自发热与环境温度，按制造商寿命倍增模型计算预期使用寿命
+  applicability:
+    component_category: Capacitor
+    sub_category: Aluminum_Electrolytic
+  inputs:
+    - {name: ripple_current_rms, unit: A, required: true, source: ComponentStress}
+    - {name: esr_at_freq, unit: ohm, required: true, source: Component.rated_params}
+    - {name: thermal_resistance_ca, unit: degC_per_W, required: true, source: Component.rated_params}
+    - {name: local_ambient_temp, unit: degC, required: true, source: ComponentStress}
+    - {name: rated_max_temp, unit: degC, required: true, source: Component.rated_params}
+    - {name: rated_endurance_hours, unit: h, required: true, source: Component.rated_params}
+    - {name: product_lifetime_target, unit: h, required: true, source: OperatingProfile}
+  preconditions:
+    - "local_ambient_temp < rated_max_temp"
+  plugin_ref:
+    module: "reliability_calc.capacitors.ecap_arrhenius_v1"
+    entry_func: "evaluate_ecap_lifetime"
+    params:
+      doubling_temp_delta: 10.0        # 温度每降10℃寿命翻倍（默认基线，优先读取器件手册专属参数）
+      life_safety_factor: 1.2          # 预测寿命需大于产品目标寿命的 1.2 倍
+  outputs_exposed:
+    - core_temp_est                    # 输出估算芯温供报告展示
+    - predicted_life_hours             # 输出预测寿命小时数
+  severity: high
+  rationale: 电解液干涸速率随芯温呈指数上升，高频纹波引发的 ESR 损耗是高温失效主因
+  recommendation: 选用低 ESR 型号、多颗电容并联降低单颗纹波电流，或远离功率电感/散热器布局
+  evidence:
+    - {evidence_id: EVD-APP-NIC04, page_or_section: "Aluminum Electrolytic Capacitor Application Guide p.14"}
+  evidence_level: A
+  owner: "张工(器件工程)"
+  reviewer: "李工(可靠性负责人)"
+  version: 1.0.0
+  status: approved
+  effective_date: 2026-11-21
+  expiry_date: 2028-11-21
+  tests:
+    - name: 标准105℃/2000h电容在65℃下寿命计算验证
+      inputs: {ripple_current_rms: 0.5, esr_at_freq: 0.1, thermal_resistance_ca: 40, local_ambient_temp: 65, rated_max_temp: 105, rated_endurance_hours: 2000, product_lifetime_target: 20000}
+      expected_pass: true
+      expected_outputs: {core_temp_est: 66.0, predicted_life_hours: 29863.0}
+      tolerance_rel: 0.001             # 数值相对误差 ≤0.1%（挂钩 03 §5）

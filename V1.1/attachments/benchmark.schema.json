@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reliability.local/schemas/benchmark.schema.json",
+  "title": "AI Benchmark Sample",
+  "description": "AI电子硬件可靠性分析系统 - 基准集样本标注 Schema。配套文档：03_验证与验收规范 §4/§4.1。Precision/Recall/F1 与高风险漏报率以 expected_findings/not_expected 标注为唯一分母依据。",
+  "type": "object",
+  "required": ["sample_id", "domain", "scenario_tag", "input_snapshot", "expected_findings", "not_expected", "reviewer", "label_status"],
+  "properties": {
+    "sample_id": {
+      "type": "string",
+      "pattern": "^BENCH-[A-Z0-9]+-[0-9]{3}$",
+      "description": "基准样本编号：BENCH-<域>-<序号>"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["derating", "pcb_pcba", "power", "esd_emi", "thermal", "dfmea", "fa", "dvpr", "unit_anomaly", "missing_data", "version_conflict", "expired_standard", "prompt_injection"]
+    },
+    "scenario_tag": {
+      "type": "string",
+      "pattern": "^T(1[0-6]|[1-9])$",
+      "description": "对应 03 §6 场景测试矩阵 ID"
+    },
+    "input_snapshot": {
+      "type": "object",
+      "required": ["ref", "checksum"],
+      "properties": {
+        "ref": { "type": "string", "description": "输入快照文件/参数集引用路径" },
+        "checksum": { "type": "string", "description": "快照校验值，冻结依据" },
+        "notes": { "type": "string" }
+      }
+    },
+    "expected_findings": {
+      "type": "array",
+      "description": "标注答案：系统应产生的风险。空数组仅适用于「应拒答/无发现」类样本",
+      "items": {
+        "type": "object",
+        "required": ["risk_ref", "severity", "match_hint"],
+        "properties": {
+          "risk_ref": { "type": "string", "description": "关联规则 rule_id 或失效模式 mode_id" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+          "match_hint": { "type": "string", "description": "风险识别要点（供评审比对措辞差异）" },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "not_expected": {
+      "type": "array",
+      "description": "明确不应产生的风险（误报计分依据）",
+      "items": {
+        "type": "object",
+        "required": ["risk_ref"],
+        "properties": {
+          "risk_ref": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "rationale": { "type": "string", "description": "专家判定理由" },
+    "reviewer": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "双人独立标注（03 §4.1）",
+      "items": { "type": "string" }
+    },
+    "adjudication": {
+      "type": ["object", "null"],
+      "description": "分歧仲裁记录；无分歧为 null",
+      "properties": {
+        "arbitrator": { "type": "string" },
+        "decision": { "type": "string" },
+        "date": { "type": "string", "format": "date" }
+      }
+    },
+    "label_status": {
+      "type": "string",
+      "enum": ["agreed", "disputed", "resolved"],
+      "description": "agreed=双标一致；disputed=有分歧待仲裁；resolved=已仲裁冻结。仅 agreed/resolved 参与计分"
+    },
+    "benchmark_version": { "type": "string", "description": "基准集冻结版本号" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "label_status": { "const": "resolved" } } },
+      "then": { "required": ["adjudication"] }
+    }
+  ]
+}

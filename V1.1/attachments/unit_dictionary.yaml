@@ -1,0 +1,123 @@
+# AI电子硬件可靠性分析系统 - 单位字典 V1.0
+# 规则引擎 Unit Normalization 依据（02 §2.1；01 §3.1）
+# 结构：dimension → canonical_unit → aliases[]（识别用）→ to_si（归一到 SI 的乘法因子；温度类为仿射，单独标注）
+# 维度检查：比较双方 dimension 不同 → DIMENSION_MISMATCH 错误
+
+dimensions:
+  voltage:
+    canonical: V
+    units:
+      V:   {aliases: [volt, volts, 伏特, V], to_si: 1}
+      mV:  {aliases: [millivolt, 毫伏], to_si: 1e-3}
+      kV:  {aliases: [kilovolt, 千伏], to_si: 1e3}
+      uV:  {aliases: [µV, microvolt], to_si: 1e-6}
+  current:
+    canonical: A
+    units:
+      A:   {aliases: [ampere, amps, 安培, 安], to_si: 1}
+      mA:  {aliases: [milliamp, 毫安], to_si: 1e-3}
+      uA:  {aliases: [µA, microamp], to_si: 1e-6}
+      kA:  {aliases: [kiloamp], to_si: 1e3}
+  power:
+    canonical: W
+    units:
+      W:   {aliases: [watt, 瓦特, 瓦], to_si: 1}
+      mW:  {aliases: [milliwatt, 毫瓦], to_si: 1e-3}
+      kW:  {aliases: [kilowatt, 千瓦], to_si: 1e3}
+      uW:  {aliases: [µW, microwatt], to_si: 1e-6}
+  capacitance:
+    canonical: F
+    units:
+      F:   {aliases: [farad, 法拉], to_si: 1}
+      mF:  {aliases: [millifarad], to_si: 1e-3}
+      uF:  {aliases: [µF, microfarad, uf, 微法], to_si: 1e-6}
+      nF:  {aliases: [nanofarad, nf], to_si: 1e-9}
+      pF:  {aliases: [picofarad, pf, 皮法], to_si: 1e-12}
+  resistance:
+    canonical: Ohm
+    units:
+      Ohm:  {aliases: [ohm, Ω, 欧姆, 欧], to_si: 1}
+      mOhm: {aliases: [mΩ, milliohm, 毫欧], to_si: 1e-3}
+      kOhm: {aliases: [kΩ, kiloohm, kilohm, 千欧], to_si: 1e3}
+      MOhm: {aliases: [MΩ, megaohm, 兆欧], to_si: 1e6}
+  inductance:
+    canonical: H
+    units:
+      H:   {aliases: [henry, 亨利], to_si: 1}
+      mH:  {aliases: [millihenry], to_si: 1e-3}
+      uH:  {aliases: [µH, microhenry], to_si: 1e-6}
+  temperature:
+    canonical: degC
+    affine_note: >-
+      摄氏与开尔文为仿射换算（K = degC + 273.15），不适用乘法因子。
+      规则涉及温差（ΔT）时使用 K 或 degC 等价；涉及绝对温度（Arrhenius、结温计算）
+      必须显式声明使用 K，否则引擎拒绝并报 TEMPERATURE_SCALE_AMBIGUOUS。
+    units:
+      degC: {aliases: [°C, ℃, celsius, 摄氏度, C], to_si: affine(+273.15→K)}
+      K:    {aliases: [kelvin, 开尔文], to_si: 1}
+      degF: {aliases: [°F, fahrenheit, 华氏度], to_si: affine((x-32)/1.8→degC)}
+  frequency:
+    canonical: Hz
+    units:
+      Hz:  {aliases: [hertz, 赫兹], to_si: 1}
+      kHz: {aliases: [kilohertz], to_si: 1e3}
+      MHz: {aliases: [megahertz], to_si: 1e6}
+      GHz: {aliases: [gigahertz], to_si: 1e9}
+  time:
+    canonical: s
+    units:
+      s:   {aliases: [sec, second, 秒], to_si: 1}
+      ms:  {aliases: [millisecond, 毫秒], to_si: 1e-3}
+      us:  {aliases: [µs, microsecond, 微秒], to_si: 1e-6}
+      h:   {aliases: [hour, hr, 小时], to_si: 3600}
+      min: {aliases: [minute, 分钟], to_si: 60}
+  lifetime:
+    canonical: h
+    note: 寿命/循环以小时归一；循环次数类输入须改用 dimensionless 或 cycles 并在规则中显式声明判据类型
+    units:
+      h:      {aliases: [hours, 小时], to_si: 3600}
+      cycles: {aliases: [次, 循环, cycle], to_si: 1, dimension: cycles}
+  energy:
+    canonical: J
+    units:
+      J:   {aliases: [joule, 焦耳], to_si: 1}
+      mJ:  {aliases: [millijoule], to_si: 1e-3}
+      Wh:  {aliases: [watthour, 瓦时], to_si: 3600}
+      mWh: {aliases: [milliwatthour], to_si: 3.6}
+  capacity_charge:
+    canonical: C
+    note: 电池容量常用 mAh（电荷量），独立于 capacitance 维度
+    units:
+      mAh: {aliases: [mah, 毫安时], to_si: 3.6}
+      Ah:  {aliases: [ah, 安时], to_si: 3600}
+  mass:
+    canonical: kg
+    units:
+      kg:  {aliases: [kilogram, 千克], to_si: 1}
+      g:   {aliases: [gram, 克], to_si: 1e-3}
+      mg:  {aliases: [milligram, 毫克], to_si: 1e-6}
+  length:
+    canonical: m
+    units:
+      m:   {aliases: [meter, 米], to_si: 1}
+      mm:  {aliases: [millimeter, 毫米], to_si: 1e-3}
+      um:  {aliases: [µm, micrometer, 微米], to_si: 1e-6}
+      mil: {aliases: [mils, 密耳], to_si: 2.54e-5}
+  pressure:
+    canonical: Pa
+    units:
+      Pa:  {aliases: [pascal, 帕斯卡], to_si: 1}
+      kPa: {aliases: [kilopascal], to_si: 1e3}
+      atm: {aliases: [标准大气压], to_si: 101325}
+  flow_rate:
+    canonical: Bps
+    note: 网络吞吐用（非本系统主域，保留以支撑适配器测试）
+    units:
+      Bps: {aliases: [bytes_per_second], to_si: 1}
+
+alias_normalization_rules:
+  - 全部别名匹配不区分大小写（识别阶段）；归一输出用 canonical。
+  - µ/u/micro 三形态视为同一前缀。
+  - 识别失败（未知单位）报 UNKNOWN_UNIT，不猜测。
+  - 温差与绝对温度混用报 TEMPERATURE_SCALE_AMBIGUOUS。
+  - 同维度跨倍率自动归一（0.1 A ↔ 100 mA）；跨维度比较报 DIMENSION_MISMATCH。
