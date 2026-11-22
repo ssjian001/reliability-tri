@@ -42,7 +42,7 @@
   owner: "张工(器件工程)"
   reviewer: "李工(可靠性负责人)"
   version: "1.1.0"
-  status: published
+  status: draft
   effective_date: "2026-11-21"
   expiry_date: "2028-11-21"
   tests:
@@ -103,7 +103,7 @@
   owner: "王工(电源可靠性)"
   reviewer: "李工(可靠性负责人)"
   version: "1.1.0"
-  status: published
+  status: draft
   effective_date: "2026-11-21"
   expiry_date: "2027-11-21"
   tests:
@@ -147,8 +147,8 @@
     entry_func: "evaluate_ecap_lifetime"
     digest: "sha256:待入库时以插件包内容计算"
     params:
-      doubling_temp_delta: {value: 10.0, unit: K, quantity_kind: delta}
-      life_safety_factor: {value: 1.2, unit: ratio, quantity_kind: absolute}
+      doubling_temp_delta: {value: 10.0, unit: K, quantity_kind: delta, source: "器件手册专属参数优先；默认基线", approval: "待领域 Owner 确认"}
+      life_safety_factor: {value: 1.2, unit: ratio, quantity_kind: absolute, source: "企业设计裕度规范（示意）", approval: "待可靠性负责人批准"}
   outputs_exposed:
     - {name: core_temp_est, unit: degC, type: number, quantity_kind: absolute}
     - {name: predicted_life_hours, unit: h, type: number, quantity_kind: absolute}
@@ -167,7 +167,7 @@
   owner: "张工(器件工程)"
   reviewer: "李工(可靠性负责人)"
   version: "1.1.0"
-  status: published
+  status: draft
   effective_date: "2026-11-21"
   expiry_date: "2028-11-21"
   tests:

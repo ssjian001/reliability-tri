@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://reliability.local/schemas/benchmark.schema.json",
   "title": "AI Benchmark Sample",
-  "description": "AI电子硬件可靠性分析系统 - 基准集样本标注 Schema。配套文档：03_验证与验收规范 §4/§4.1。Precision/Recall/F1 与高风险漏报率以 expected_findings/not_expected 标注为唯一分母依据。",
+  "description": "AI电子硬件可靠性分析系统 - 基准集样本标注 Schema。配套文档：03_验证与验收规范 §4/§4.1。Precision/Recall/F1 与高风险漏报率以 expected_findings/not_expected 标注为唯一分母依据。 V1.1.1：增加双人独立 annotations（保留原始标注以计算一致性）。",
   "type": "object",
   "required": [
     "sample_id",
@@ -132,10 +132,11 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
-      "description": "双人独立标注（03 §4.1）",
+      "description": "两位标注者 ID；必须与 annotations[].annotator_id 一一对应",
       "items": {
         "type": "string"
-      }
+      },
+      "uniqueItems": true
     },
     "adjudication": {
       "type": [
@@ -168,6 +169,46 @@
     "benchmark_version": {
       "type": "string",
       "description": "基准集冻结版本号"
+    },
+    "annotations": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "两位标注者独立提交的原始标注；不得用共识结果覆盖原始记录",
+      "items": {
+        "type": "object",
+        "required": [
+          "annotator_id",
+          "expected_findings",
+          "not_expected",
+          "rationale"
+        ],
+        "properties": {
+          "annotator_id": {
+            "type": "string"
+          },
+          "expected_findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/finding"
+            }
+          },
+          "not_expected": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/notExpected"
+            }
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "annotated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "allOf": [
@@ -209,5 +250,60 @@
         }
       }
     }
-  ]
+  ],
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "match_hint",
+        "risk_ref",
+        "rule_version_at_label",
+        "severity"
+      ],
+      "properties": {
+        "risk_ref": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "info"
+          ]
+        },
+        "match_hint": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rule_version_at_label": {
+          "type": "string",
+          "description": "标注时规则版本；规则改版后按此键判定匹配"
+        }
+      },
+      "additionalProperties": false
+    },
+    "notExpected": {
+      "type": "object",
+      "required": [
+        "risk_ref"
+      ],
+      "properties": {
+        "risk_ref": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

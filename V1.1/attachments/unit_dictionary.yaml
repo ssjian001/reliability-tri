@@ -139,10 +139,15 @@ dimensions:
     units:
       Bps: {aliases: [bytes_per_second], to_si: 1, quantity_kind: absolute}
 
-normalization_rules:
-  - 别名匹配不区分大小写（识别阶段）；归一输出用 canonical。
-  - µ/u/micro 三形态视为同一前缀。
+alias_normalization_rules:
+  - SI 符号必须区分大小写（mW 与 MW、mA 与 MA、mOhm 与 MOhm 不得折叠）；禁止对所有单位符号统一 casefold（V1.1.1 合并，复审确认的前缀歧义风险）。
+  - 自然语言别名可大小写不敏感匹配；别名在多个维度存在歧义时须显式指定维度或拒绝。
+  - µ/u/micro 三形态仅在同一量纲且不引入前缀歧义时视为同一前缀。
   - 温度双轨（r3）：MeasuredParam/inputs 带 quantity_kind。absolute 温度归一到 K（带 273.15 偏移）；delta 温差归一到 K 差值（无偏移）。表达式只读取已归一值；未知 quantity_kind 的温度报 TEMPERATURE_SCALE_AMBIGUOUS。
   - 识别失败报 UNKNOWN_UNIT，不猜测。
   - 同维度跨倍率自动归一（0.1 A ↔ 100 mA）；跨维度比较报 DIMENSION_MISMATCH。
   - lifetime_hours 与 cycles 互不转换（复审 P1-9）；寿命规则显式声明判据类型。
+
+non_physical_types:
+  table:
+    description: 结构化曲线表/数据对象（lookup_curve 数据源）；不参与物理量换算与 SI 归一流程（V1.1.1 合并）

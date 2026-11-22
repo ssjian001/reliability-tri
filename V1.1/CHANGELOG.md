@@ -119,3 +119,26 @@
 | 5. tests ≥3 且 kind 覆盖 | ✅ 三模板各 3 条（normal/boundary/invalid） |
 | 6. 矩阵补 FR01/FR11/FR12 + T17/T18/T19 | ✅ |
 | 7. README 附件清单/LICENSE/追溯链接 | ✅ README 已列；LICENSE=CC BY 4.0；docs/legacy + docs/review 归档 |
+
+## 8. V1.1.1（2026-11-22）：协作者补丁合并轮
+
+来源：协作者独立评审补丁（基于用户上传的旧快照；全文 `REVIEW_REPORT_V1.1.1.md`，结论「有条件通过」）。与本仓 r3（e96955a）平行演进，逐文件三方合并，**未覆写已定案内容**。
+
+### 合并采纳
+| 项 | 说明 |
+|---|---|
+| 附件 dfmea_scoring_template.md | 替换为 27 组合完整 AP 网格版（消除「其余按经验排序」口径漂移；补企业落地要求：O 须映射失率/频次、无数据标 TBD）；保留 §6 十分制映射 |
+| 附件 unit_dictionary.yaml | 并入 alias_normalization_rules 强化版：SI 符号大小写敏感（mW/MW 不得折叠）、自然语言别名歧义须显式维度、µ/u/micro 前缀歧义限定、non_physical_types（table 不参与换算） |
+| 附件 benchmark.schema.json | 并入 annotations[]（双人独立原始标注逐条保留，不得被共识覆盖——一致性可计算）+ $defs/finding/notExpected；r3 的 rule_version_at_label 已回填 annotations 与 $defs |
+| tools/validate_assets.py | **CI 门槛工具化**（复审 §5 建议 1-2、5、7 落地）：schema 自检、模板 0-error、注入语料 ≥20、单位精确别名碰撞检测（含已知歧义白名单 WARN：K/h/小时 跨维度须显式维度）、benchmark 示例校验 |
+| tools/requirements-validation.txt | 校验依赖（PyYAML、jsonschema） |
+| V1.1/REVIEW_REPORT_V1.1.1.md | 协作者评审报告入库（存档） |
+| V1.1/attachments/examples/benchmark_sample.example.json | 基准样本示例（已补 rule_version_at_label） |
+| rule_templates.yaml | status published→draft（示意证据不得作为真实证据发布，协作者理由成立）；插件参数补 source/approval 字段 |
+
+### 修复与把关
+- 合并后 validate_assets.py 首跑 FAIL 两项，已修：示例补 rule_version_at_label（$defs/finding 同步）；单位精确别名碰撞 K/h/小时 列为已知歧义 WARN（解析须显式维度，字典 normalization_rules 已声明）。
+- 把关拒绝项：协作者 rule_templates 基于 r3 前旧快照（无 quantity_kind），未整体替换；status 统一方向取 draft（推翻 r3 的 published，理由=占位证据）。
+
+### 校验状态
+validate_assets.py：**PASS**（RULE ×3 PASS、BENCHMARK SAMPLE PASS、INJECTION 28≥20、COLLISIONS 0 + WARN ×3 已知歧义）。

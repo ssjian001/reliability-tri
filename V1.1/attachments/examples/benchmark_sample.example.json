@@ -1,0 +1,77 @@
+{
+  "sample_id": "BENCH-DERATING-007",
+  "domain": "derating",
+  "scenario_tag": "T1",
+  "input_snapshot": {
+    "ref": "examples/input_snapshot_bench_derating_007.json",
+    "checksum": "sha256:REPLACE_WITH_REAL_HASH"
+  },
+  "expected_findings": [
+    {
+      "risk_ref": "ELEC-RES-PWR-001",
+      "severity": "high",
+      "match_hint": "工作功耗超过批准降额阈值",
+      "evidence_refs": [
+        "EVD-EXAMPLE-001"
+      ],
+      "rule_version_at_label": "1.1.0"
+    }
+  ],
+  "not_expected": [
+    {
+      "risk_ref": "PCB-WARP-002",
+      "reason": "本样本不含 PCB 结构应力输入"
+    }
+  ],
+  "rationale": "示例样本仅展示双人标注结构；正式基准集须替换输入快照、证据引用与工程标注。",
+  "reviewer": [
+    "annotator_A",
+    "annotator_B"
+  ],
+  "annotations": [
+    {
+      "annotator_id": "annotator_A",
+      "expected_findings": [
+        {
+          "risk_ref": "ELEC-RES-PWR-001",
+          "severity": "high",
+          "match_hint": "工作功耗超过批准降额阈值",
+          "evidence_refs": [
+            "EVD-EXAMPLE-001"
+          ],
+          "rule_version_at_label": "1.1.0"
+        }
+      ],
+      "not_expected": [
+        {
+          "risk_ref": "PCB-WARP-002",
+          "reason": "无 PCB 结构应力输入"
+        }
+      ],
+      "rationale": "标注者 A 独立标注。"
+    },
+    {
+      "annotator_id": "annotator_B",
+      "expected_findings": [
+        {
+          "risk_ref": "ELEC-RES-PWR-001",
+          "severity": "high",
+          "match_hint": "工作功耗超过批准降额阈值",
+          "evidence_refs": [
+            "EVD-EXAMPLE-001"
+          ],
+          "rule_version_at_label": "1.1.0"
+        }
+      ],
+      "not_expected": [
+        {
+          "risk_ref": "PCB-WARP-002",
+          "reason": "无 PCB 结构应力输入"
+        }
+      ],
+      "rationale": "标注者 B 独立标注。"
+    }
+  ],
+  "label_status": "agreed",
+  "benchmark_version": "0.1-draft"
+}
