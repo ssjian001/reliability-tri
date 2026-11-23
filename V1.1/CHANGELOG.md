@@ -201,3 +201,28 @@ G1 标记：**prototype → implementation baseline 候选**（待协作者对 e
 | G2-5 基准集骨架 | V1.1/benchmarks/benchmark_skeleton.yaml——T01-T19 全场景 17 骨架样本（机械场景 T02/T03/T04/T16 完整标注；专家场景标 needs_human_annotation）；benchmark.schema 增 engine_conflict 域与 T 零前缀 pattern | 17/17 schema 通过 |
 
 诚实边界：G2-2 的 44 条为 **draft 草案**（阈值 C 级行业基线，待企业批准转 A/B 并升 published）——「正式规则」的证据审查须人工完成；G2-5 骨架的 expected_findings 细节须领域工程师双人标注（自动化只覆盖机械场景）。
+
+## 15. G2-PROD（2026-11-23）：协作者 G2 生产实现采用
+
+来源：协作者 V1.1.1_G1_G2.zip（G2 MVP 0.2.0：**功能级验收通过**，G2_ACCEPTANCE_REPORT 实测 40/40 属实）。
+
+### 采用（替换本仓 api/ 内存版原型，git 历史保留）
+| 交付 | 内容 |
+|---|---|
+| src/reliability_api/ | FastAPI 路由（rules 生命周期含 /versions 版本化、curves 工件+审批门禁、analyses 同步执行已发布规则、audit-events 查询）、SQLAlchemy models、Alembic 迁移（SQLite upgrade head + drift check PASS）、幂等记录、可选 Bearer Key |
+| 数据契约 | Rule 主记录 + 不可变 RuleVersion（内容哈希）、AnalysisRun/Finding 持久化、CurveArtifact（checksum/审批门禁）、Approval/AuditEvent |
+| docs/ | G2_API_DATA_CONTRACT.md（契约设计）、G2_RUNBOOK.md（运行手册）、G2_ACCEPTANCE_REPORT.md（验收报告） |
+| openapi/openapi.json | API 快照 |
+| tests/g2/ | test_api_contract.py（40/40 之一） |
+
+### 保留（本仓不覆写）
+r3 修复版 V1.1 三件套与附件、rules_draft_60.yaml、benchmarks/、tools/、LICENSE、docs/legacy+review。
+
+### 合并修复
+- tests/conftest.py 落正确目录（shell cwd 重置坑）；rule.schema.json 平铺字段定案（expression/curve_eval/plugin_ref+outputs_exposed 顶层 + rule_type 条件必填 allOf——与执行器实现为准，01 §5.3 包络在 JSON 展平为顶层字段）；benchmark 示例 T1→T01。
+- tests/test_security.py 重写适配 RuleExecutor（28 语料：判定不受影响/无提示词泄露/状态稳定）。
+- requirements：tools/requirements-validation.txt 增 pint/simpleeval/pytest/httpx；src/reliability_api/requirements.txt 新增。
+
+### 校验
+pytest 43 passed（g1 33 + g2 契约 + security 4）+ validate_assets PASS（OpenAPI 3.1.0 全契约端点在位）。
+生产化未关闭项（身份 OIDC/多租户/worker queue/PG）见 G2_ACCEPTANCE_REPORT §4——列 G3。

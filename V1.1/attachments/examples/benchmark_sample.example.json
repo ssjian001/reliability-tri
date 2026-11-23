@@ -1,7 +1,7 @@
 {
   "sample_id": "BENCH-DERATING-007",
   "domain": "derating",
-  "scenario_tag": "T1",
+  "scenario_tag": "T01",
   "input_snapshot": {
     "ref": "examples/input_snapshot_bench_derating_007.json",
     "checksum": "sha256:REPLACE_WITH_REAL_HASH"
