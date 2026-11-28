@@ -1,0 +1,369 @@
+- mode_id: FM-TWS-STRUCT-001
+  item_type: TWS耳机
+  name: 充电仓铰链
+  function: 开合仓盖
+  failure_mode: 铰链断裂/松脱导致仓盖无法定位
+  failure_mechanism: 塑料铰链销疲劳断裂（反复开合应力集中）
+  root_cause_candidates:
+  - 开合次数超设计寿命
+  - 铰链销径/材质强度不足
+  - 跌落冲击
+  local_effect: 仓盖无法保持闭合定位
+  next_level_effect: 磁吸/霍尔传感定位失效
+  end_effect: 无法充电、无法携带、异物进入
+  detection_method: 用户报修；开合循环试验（机械耐久）
+  prevention_control: 铰链销改金属或加强筋；寿命设计≥开合2万次
+  verification_method: 机械耐久试验（开合循环至失效，记录次数）
+  evidence_level:
+  - JoesGE hinge repair guide
+  - Taobao budget TWS lifespan report
+  evidence_refs: C
+  limitations: 消费级 TWS 公开维修统计；无实验室数据
+  related_rules:
+  - ELEC-ECAP-*
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-STRUCT-002
+  item_type: TWS耳机
+  name: 充电触点（仓内 pogo pin + 耳机柄触点）
+  function: 仓-耳机充电电力传输
+  failure_mode: 触点氧化/污染导致充电中断或慢充
+  failure_mechanism: 汗液电化学腐蚀 + 金属碎屑 + 触点压力不足导致接触电阻升高
+  root_cause_candidates:
+  - 汗液/湿度腐蚀
+  - 耳机的磁吸座偏位
+  - 金属碎屑堆积
+  - 触点镀层磨损
+  local_effect: 耳机充不进电或时断时续
+  next_level_effect: 用户误判耳机故障
+  end_effect: 耳机无电停用；充电失败投诉
+  detection_method: 接触电阻测量；触点外观显微检查
+  prevention_control: 触点镀金加厚；防尘网设计；用户清洁指引（干燥布/异丙醇）
+  verification_method: 盐雾试验（模拟汗液 GB/T 2423.17）；接触电阻循环测试
+  evidence_level:
+  - Sapulo 29% charging failure stat
+  - iTechArena
+  - Gadget and Grill
+  - Creative support
+  evidence_refs: C
+  limitations: 消费级统计（Sapulo 数据为二手来源）；需实验室盐雾数据升级为 B
+  related_rules:
+  - ELEC-ECAP-RIPPLE-001
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-STRUCT-003
+  item_type: TWS耳机
+  name: 耳机柄出音口/泄压孔
+  function: 声音输出与气压平衡
+  failure_mode: 出音孔被耳垢/灰尘堵塞导致音量下降
+  failure_mechanism: 耳垢与灰尘在网罩堆积（防护网目被堵）
+  root_cause_candidates:
+  - 使用环境粉尘
+  - 耳垢倒流
+  - 防护网目密度过高
+  local_effect: 音量衰减、低频损失
+  next_level_effect: 用户手动清堵不慎推入更深
+  end_effect: 听力体验下降、返修误判为喇叭故障
+  detection_method: 声学测试（频响曲线对比）；目视放大镜检查
+  prevention_control: 防尘网目径优化；可拆卸网罩设计
+  verification_method: 声学频响对比试验（堵塞前后）
+  evidence_level:
+  - 常见维修统计
+  evidence_refs: C
+  limitations: 定性为主
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-CMF-001
+  item_type: TWS耳机
+  name: 耳机柄外壳 CMF 涂层
+  function: 外观与握持
+  failure_mode: 涂层剥落/磨损（尤其汗液接触区）
+  failure_mechanism: PVD/喷涂涂层与汗液（盐+酶）电化学与机械磨擦复合作用
+  root_cause_candidates:
+  - 汗液盐分腐蚀
+  - 口袋/耳道摩擦
+  - 涂层附着力不足（底涂 plasma 处理不足）
+  local_effect: 外观斑点/露底材
+  next_level_effect: 影响质感，严重时露出金属致镍过敏
+  end_effect: 外观投诉、退换货
+  detection_method: 涂层附着力测试（百格）；人工汗液试验（GB/T 2423.17 / ISO 3160-2）
+  prevention_control: PVD 涂层加厚；底涂等离子处理；选镍释放量低的材料（EN 1811）
+  verification_method: 人工汗液试验 + 百格附着力 + ROHS 镍释放量测试
+  evidence_level:
+  - Wirecutter sweat corrosion guide
+  - EN 1811 nickel release
+  evidence_refs: C
+  limitations: 无本厂实测数据；需盐雾+汗液试验升 B
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-CMF-002
+  item_type: TWS耳机
+  name: 硅胶耳帽
+  function: 入耳密封与舒适
+  failure_mode: 硅胶耳帽老化发粘/变形导致佩戴松脱与声学泄漏
+  failure_mechanism: 硅胶水解老化（低交联密度硅胶长期湿存）+ 油脂吸附
+  root_cause_candidates:
+  - 长期湿存未用
+  - 汗脂吸附
+  - 硅胶硫化不足
+  local_effect: 耳帽表面发粘、变形、密封差
+  next_level_effect: 声学泄漏（低频损失）、佩戴不适
+  end_effect: 用户体验下降、耳帽耗材更换
+  detection_method: 硅胶硬度/拉伸测试；人工老化（70℃×72h 湿热）
+  prevention_control: 高交联铂金硫化硅胶；耳帽独立密封包装（干燥剂）
+  verification_method: 湿热老化试验前后硬度与密封性对比
+  evidence_level:
+  - KZ/IEM sticky tip reports
+  - SpinFit/Eletech durability reference
+  evidence_refs: C
+  limitations: 行业常见老化报告；需本厂材料数据
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-CASE-001
+  item_type: TWS耳机
+  name: 充电仓盖磁吸+霍尔传感
+  function: 仓盖状态检测（休眠唤醒）
+  failure_mode: 仓盖磁吸力衰减或霍尔错位 → 仓 MCU 永不休眠 → 仓电池持续放电
+  failure_mechanism: 仓盖磁铁磁力衰减/错位 → 霍尔传感器误判为开盖 → BLE 常开 + 配对弹窗反复触发
+  root_cause_candidates:
+  - 磁铁磁力衰减
+  - 霍尔传感器错位/失效
+  - 仓盖变形导致磁距变化
+  local_effect: 仓电池异常快速耗尽
+  next_level_effect: 仓与耳机同时亏电
+  end_effect: 用户在无充电条件下耳机不可用；投诉电池缺陷
+  detection_method: 仓电池放电曲线监测；Hall 状态日志（固件）
+  prevention_control: 磁铁磁力规格 + 霍尔容差设计；固件增加开盖超时休眠策略
+  verification_method: 开合循环+磁力衰减老化试验；固件日志采集
+  evidence_level:
+  - Reddit r/airpods case drain
+  - Kyptec case drain guide
+  - Ozlo firmware fix
+  - Sony 00229316
+  evidence_refs: C
+  limitations: 消费级报告多源一致；机制解释充分
+  related_rules:
+  - FM-TWS-STRUCT-002
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-CASE-002
+  item_type: TWS耳机
+  name: 耳机在仓内 BLE 连接
+  function: 仓内休眠管理
+  failure_mode: 耳机入仓后仍保持 BLE 连接 → 耳机与仓电池同时耗尽
+  failure_mechanism: 入仓检测失效（霍尔/触点误判）→ 耳机未进入关机状态
+  root_cause_candidates:
+  - 入仓霍尔误判
+  - 固件休眠策略缺陷
+  - 触点污染导致误判在仓外
+  local_effect: 耳机与仓电池同时耗尽
+  next_level_effect: 用户次日无法使用
+  end_effect: 投诉续航差；OTA 修复压力
+  detection_method: 电池放电日志；BLE 连接状态记录
+  prevention_control: 固件修正入仓判定（触点电压+霍尔双确认）
+  verification_method: 模拟入仓/出仓 1000 次记录 BLE 状态
+  evidence_level:
+  - Digital Trends in-case connectivity
+  - Google Pixel Buds thread
+  - Ozlo firmware update
+  evidence_refs: C
+  limitations: 多源报告一致
+  related_rules:
+  - FM-TWS-CASE-001
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-TWS-BATT-001
+  item_type: TWS耳机
+  name: 耳机内置锂电池
+  function: 供电
+  failure_mode: 电池鼓包/容量衰减至不可用（无更换方案）
+  failure_mechanism: 紧凑布局中电池受蓝牙天线/麦克风/电路挤压 + 充放电热应力加速衰减；汗液渗入腐蚀电池引线
+  root_cause_candidates:
+  - 结构挤压电池
+  - 高温充放电
+  - 汗液渗入腐蚀
+  - 循环寿命到期
+  local_effect: 电池鼓包顶开外壳/容量 <80%
+  next_level_effect: 耳机无法充电或外壳变形
+  end_effect: 耳机报废（维修成本≈新品）
+  detection_method: 电池拆解检查；充放电循环容量测试
+  prevention_control: 布局留电池膨胀空间；电池可拆卸设计；过充过放保护
+  verification_method: 循环寿命测试（500 次容量保持率 ≥80%）；汗液渗入腐蚀试验
+  evidence_level:
+  - UT Austin/TechRadar battery study
+  - Wirecutter sweat corrosion
+  - iFixit repairability
+  evidence_refs: C
+  limitations: 学术研究 + 消费级报告；需本厂实测
+  related_rules:
+  - FM-TWS-STRUCT-003
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-HEAD-STRUCT-001
+  item_type: 头戴耳机
+  name: 头梁铰链/伸缩臂
+  function: 头梁尺寸调节
+  failure_mode: 铰链/伸缩臂塑料开裂导致耳壳脱落
+  failure_mechanism: 铰链根部应力集中 + 反复伸缩疲劳 + PC/ABS 塑料老化脆化
+  root_cause_candidates:
+  - 铰链根部壁厚不足
+  - 玻纤取向应力集中
+  - 反复调节
+  - 跌落冲击
+  local_effect: 铰链裂纹→断裂→耳壳脱落
+  next_level_effect: 单侧无声（排线拉断）
+  end_effect: 整机报废或高价维修
+  detection_method: 用户报修；铰链根部染色渗透检查
+  prevention_control: 铰链改金属/加强；根部圆角加大；排线留应力释放环
+  verification_method: 铰链疲劳试验（伸缩 5000 次 + 扭转）；跌落试验
+  evidence_level:
+  - JoesGE hinge failure
+  - Central Sound Sony XM6 crack report
+  evidence_refs: C
+  limitations: 维修统计 + 具体型号（XM6）报告；需 CAE 应力仿真升 B
+  related_rules:
+  - FM-TWS-STRUCT-001
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-HEAD-STRUCT-002
+  item_type: 头戴耳机
+  name: 耳壳与头梁连接排线
+  function: 音频/电信号传输
+  failure_mode: 排线在活动关节处疲劳断裂 → 单侧无声
+  failure_mechanism: 耳壳旋转/折叠反复弯折排线 → 铜箔疲劳断裂
+  root_cause_candidates:
+  - 排线弯折半径过小
+  - 排线无应力释放环
+  - 旋转次数超寿命
+  local_effect: 单侧无声或杂音
+  next_level_effect: 用户体验骤降
+  end_effect: 整机维修或报废
+  detection_method: 单侧无声复现；排线弯折寿命测试
+  prevention_control: 排线改 FPC 加应力释放环；关节处留余量
+  verification_method: 排线弯折寿命测试（旋转 1 万次通断率）
+  evidence_level:
+  - JoesGE repair statistics
+  evidence_refs: C
+  limitations: 维修统计推定
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-HEAD-CMF-001
+  item_type: 头戴耳机
+  name: 耳垫（蛋白皮/PU 革）
+  function: 佩戴密封与舒适
+  failure_mode: 耳垫表层剥落掉粉、开裂（蛋白皮水解）
+  failure_mechanism: PU/蛋白皮涂层水解老化 + 汗液油脂降解 → 表层粉化剥落
+  root_cause_candidates:
+  - 汗液/油脂长期接触
+  - PU 涂层水解
+  - 使用年限
+  local_effect: 耳垫掉粉粘皮肤、密封变差
+  next_level_effect: 声学泄漏（低频损失）、外观差
+  end_effect: 用户体验下降；耳垫更换耗材收入
+  detection_method: 耳垫外观检查；水解老化试验
+  prevention_control: 蛋白皮替换为真皮/织物质地；耳垫可拆卸设计；干燥剂包装
+  verification_method: 湿热老化试验（70℃/90%RH × 72h）前后对比；皮料剥离强度测试
+  evidence_level:
+  - Dekoni ear pad peeling guide
+  - earpads-headphones.com repair guide
+  - Linus Tech Tips forum
+  evidence_refs: C
+  limitations: 行业常见老化报告；需本厂材料老化数据
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-HEAD-CMF-002
+  item_type: 头戴耳机
+  name: 头梁垫/外壳 CMF 涂层
+  function: 外观与佩戴
+  failure_mode: 橡胶化涂层/皮革头梁垫老化掉粉、发粘
+  failure_mechanism: 橡胶化涂层塑化剂迁移 + 汗液油脂降解 → 表层发粘掉粉
+  root_cause_candidates:
+  - 涂层塑化剂迁移
+  - 汗液油脂
+  - 紫外照射
+  local_effect: 头梁掉粉粘头发、外观老化
+  next_level_effect: 影响外观与佩戴
+  end_effect: 外观投诉；翻新需求
+  detection_method: 头梁外观与掉粉检查
+  prevention_control: 改用蛋白皮/织物头梁垫；涂层配方耐汗塑化剂
+  verification_method: 人工汗液 + 紫外老化试验（QUV）前后对比
+  evidence_level:
+  - Dekoni ear pad guide
+  - earpads-headphones.com guide
+  - r/Visiblemending case
+  evidence_refs: C
+  limitations: 消费级报告；需材料老化实测
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-HEAD-CMF-003
+  item_type: 头戴耳机
+  name: 耳壳外壳涂层/阳极氧化
+  function: 外观
+  failure_mode: 涂层/阳极氧化膜磨损、变色（头梁接触区+手汗区）
+  failure_mechanism: 涂层磨损（反复摩擦）+ 汗液盐分对阳极氧化膜的腐蚀
+  root_cause_candidates:
+  - 头梁/手汗接触摩擦
+  - 汗液盐分
+  - 涂层附着力不足
+  local_effect: 外观磨损斑点、变色
+  next_level_effect: 影响质感
+  end_effect: 外观投诉、二手价值下降
+  detection_method: 涂层磨损外观检查；附着力测试
+  prevention_control: 阳极氧化加厚；PVD 耐磨涂层；接触区改材质
+  verification_method: 人工汗液试验 + 摩擦磨损试验（TABER）
+  evidence_level:
+  - Dekoni ear pad guide
+  - earpads-headphones.com guide
+  evidence_refs: C
+  limitations: 消费级报告为主
+  related_rules: []
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）
+- mode_id: FM-X-SWEAT-001
+  item_type: TWS耳机+头戴耳机
+  name: 整机-汗液暴露路径
+  function: 全系统
+  failure_mode: 汗液渗入导致的系统性腐蚀与 CMF 老化（跨组件）
+  failure_mechanism: 汗液（盐分+酶）沿入耳/头梁接触点渗入内部 → 电化学腐蚀 + CMF 表层降解
+  root_cause_candidates:
+  - 运动场景汗液大量暴露
+  - IPX 等级不能防汗液长期渗入
+  - 湿润耳机入仓存放
+  local_effect: 多组件同时腐蚀/老化
+  next_level_effect: 多种失效并发（触点+电池+涂层）
+  end_effect: 整机早期失效、批量投诉
+  detection_method: 多组件联合汗液渗入试验
+  prevention_control: IPX 等级之外增加汗液渗入专项设计；入仓干燥指引
+  verification_method: 人工汗液整机浸泡+循环试验（GB/T 2423.17）
+  evidence_level:
+  - Wirecutter sweat guide
+  - Wildhorn Outfitters IP vs sweat
+  - UT Austin battery study
+  evidence_refs: C
+  limitations: 多源消费报告交叉；建议整机汗液试验升 B
+  related_rules:
+  - FM-TWS-STRUCT-002
+  - FM-TWS-CMF-001
+  - FM-HEAD-CMF-001
+  revision: 0.1.0
+  owner: 待指派(DQE)
+  source: web-research 2026-11-23（见 evidence_refs 原始链接）

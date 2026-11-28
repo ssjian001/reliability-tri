@@ -1,0 +1,385 @@
+[
+  {
+    "rule_id": "DFMEA-TWS-HALL-001",
+    "rule_type": "declarative_expr",
+    "domain": "dfmea",
+    "title": "TWS 仓盖霍尔状态监测审查",
+    "intent": "检查 TWS 充电仓设计是否含开盖超时休眠策略（防 Hall 误判常亮耗电）",
+    "applicability": {
+      "component_category": "TWS_Case"
+    },
+    "inputs": [
+      {
+        "name": "hall_sleep_timeout_hours",
+        "unit": "h",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      },
+      {
+        "name": "min_required_hours",
+        "unit": "h",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      }
+    ],
+    "thresholds": {
+      "hall_sleep_timeout_hours": {
+        "value": 0,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-TWS-HALL-001"
+      },
+      "min_required_hours": {
+        "value": 24,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-TWS-HALL-001"
+      }
+    },
+    "severity": "high",
+    "rationale": "关联失效模式 FM-TWS-CASE-001",
+    "recommendation": "按企业 DFMEA 评分表确认后发布",
+    "evidence_level": "C",
+    "owner": "DQE",
+    "version": "0.1.0",
+    "status": "draft",
+    "notes": "关联失效模式 FM-TWS-CASE-001（web-research 草案）",
+    "expression": "hall_sleep_timeout_hours >= min_required_hours",
+    "tests": [
+      {
+        "name": "正常 80%（expr=hall_sleep_timeout_hours >= min_required)",
+        "kind": "normal",
+        "inputs": {
+          "hall_sleep_timeout_hours": 0.8,
+          "min_required_hours": 0.8
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "边界（恰达阈值）",
+        "kind": "boundary",
+        "inputs": {
+          "hall_sleep_timeout_hours": 1.0,
+          "min_required_hours": 1.0
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "异常输入（非数值）",
+        "kind": "invalid",
+        "inputs": {
+          "hall_sleep_timeout_hours": "not-a-number",
+          "min_required_hours": "not-a-number"
+        },
+        "expected_status": "ERROR"
+      }
+    ]
+  },
+  {
+    "rule_id": "DFMEA-TWS-BATT-001",
+    "rule_type": "declarative_expr",
+    "domain": "dfmea",
+    "title": "TWS 电池布局膨胀余量审查",
+    "intent": "检查电池与天线/麦克风/电路的布局间距是否留膨胀余量",
+    "applicability": {
+      "component_category": "TWS_Earbuds"
+    },
+    "inputs": [
+      {
+        "name": "battery_expansion_gap_mm",
+        "unit": "mm",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      },
+      {
+        "name": "min_expansion_gap_mm",
+        "unit": "mm",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      }
+    ],
+    "thresholds": {
+      "battery_expansion_gap_mm": {
+        "value": 0,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-TWS-BATT-001"
+      },
+      "min_expansion_gap_mm": {
+        "value": 0.5,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-TWS-BATT-001"
+      }
+    },
+    "severity": "high",
+    "rationale": "关联失效模式 FM-TWS-BATT-001",
+    "recommendation": "按企业 DFMEA 评分表确认后发布",
+    "evidence_level": "C",
+    "owner": "DQE",
+    "version": "0.1.0",
+    "status": "draft",
+    "notes": "关联失效模式 FM-TWS-BATT-001（web-research 草案）",
+    "expression": "battery_expansion_gap_mm >= min_expansion_gap_mm",
+    "tests": [
+      {
+        "name": "正常 80%（expr=battery_expansion_gap_mm >= min_expansio)",
+        "kind": "normal",
+        "inputs": {
+          "battery_expansion_gap_mm": 0.8,
+          "min_expansion_gap_mm": 0.8
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "边界（恰达阈值）",
+        "kind": "boundary",
+        "inputs": {
+          "battery_expansion_gap_mm": 1.0,
+          "min_expansion_gap_mm": 1.0
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "异常输入（非数值）",
+        "kind": "invalid",
+        "inputs": {
+          "battery_expansion_gap_mm": "not-a-number",
+          "min_expansion_gap_mm": "not-a-number"
+        },
+        "expected_status": "ERROR"
+      }
+    ]
+  },
+  {
+    "rule_id": "DFMEA-HEAD-HINGE-001",
+    "rule_type": "declarative_expr",
+    "domain": "dfmea",
+    "title": "头戴铰链根部壁厚审查",
+    "intent": "检查铰链根部壁厚是否满足最低要求（防应力集中开裂）",
+    "applicability": {
+      "component_category": "Headband_Hinge"
+    },
+    "inputs": [
+      {
+        "name": "hinge_root_wall_thickness_mm",
+        "unit": "mm",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      },
+      {
+        "name": "min_root_wall_mm",
+        "unit": "mm",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      }
+    ],
+    "thresholds": {
+      "hinge_root_wall_thickness_mm": {
+        "value": 0,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-HEAD-HINGE-001"
+      },
+      "min_root_wall_mm": {
+        "value": 1.2,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-HEAD-HINGE-001"
+      }
+    },
+    "severity": "high",
+    "rationale": "关联失效模式 FM-HEAD-STRUCT-001",
+    "recommendation": "按企业 DFMEA 评分表确认后发布",
+    "evidence_level": "C",
+    "owner": "DQE",
+    "version": "0.1.0",
+    "status": "draft",
+    "notes": "关联失效模式 FM-HEAD-STRUCT-001（web-research 草案）",
+    "expression": "hinge_root_wall_thickness_mm >= min_root_wall_mm",
+    "tests": [
+      {
+        "name": "正常 80%（expr=hinge_root_wall_thickness_mm >= min_root)",
+        "kind": "normal",
+        "inputs": {
+          "hinge_root_wall_thickness_mm": 0.8,
+          "min_root_wall_mm": 0.8
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "边界（恰达阈值）",
+        "kind": "boundary",
+        "inputs": {
+          "hinge_root_wall_thickness_mm": 1.0,
+          "min_root_wall_mm": 1.0
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "异常输入（非数值）",
+        "kind": "invalid",
+        "inputs": {
+          "hinge_root_wall_thickness_mm": "not-a-number",
+          "min_root_wall_mm": "not-a-number"
+        },
+        "expected_status": "ERROR"
+      }
+    ]
+  },
+  {
+    "rule_id": "DFMEA-HEAD-EARPAD-001",
+    "rule_type": "declarative_expr",
+    "domain": "dfmea",
+    "title": "头戴耳垫材质水解等级审查",
+    "intent": "检查耳垫是否使用耐水解材质（蛋白皮/PU 为水解高风险）",
+    "applicability": {
+      "component_category": "Headband_EarPad"
+    },
+    "inputs": [
+      {
+        "name": "material_hydrolysis_grade",
+        "unit": "ratio",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      },
+      {
+        "name": "min_hydrolysis_grade",
+        "unit": "ratio",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      }
+    ],
+    "thresholds": {
+      "material_hydrolysis_grade": {
+        "value": 0,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-HEAD-EARPAD-001"
+      },
+      "min_hydrolysis_grade": {
+        "value": 1,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-HEAD-EARPAD-001"
+      }
+    },
+    "severity": "medium",
+    "rationale": "关联失效模式 FM-HEAD-CMF-001",
+    "recommendation": "按企业 DFMEA 评分表确认后发布",
+    "evidence_level": "C",
+    "owner": "DQE",
+    "version": "0.1.0",
+    "status": "draft",
+    "notes": "关联失效模式 FM-HEAD-CMF-001（web-research 草案）",
+    "expression": "material_hydrolysis_grade >= min_hydrolysis_grade",
+    "tests": [
+      {
+        "name": "正常 80%（expr=material_hydrolysis_grade >= min_hydroly)",
+        "kind": "normal",
+        "inputs": {
+          "material_hydrolysis_grade": 0.8,
+          "min_hydrolysis_grade": 0.8
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "边界（恰达阈值）",
+        "kind": "boundary",
+        "inputs": {
+          "material_hydrolysis_grade": 1.0,
+          "min_hydrolysis_grade": 1.0
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "异常输入（非数值）",
+        "kind": "invalid",
+        "inputs": {
+          "material_hydrolysis_grade": "not-a-number",
+          "min_hydrolysis_grade": "not-a-number"
+        },
+        "expected_status": "ERROR"
+      }
+    ]
+  },
+  {
+    "rule_id": "DFMEA-CMF-SWEAT-001",
+    "rule_type": "declarative_expr",
+    "domain": "dfmea",
+    "title": "CMF 涂层人工汗液试验等级审查",
+    "intent": "检查涂层是否通过人工汗液试验（GB/T 2423.17）",
+    "applicability": {
+      "component_category": [
+        "CMF_Coated",
+        "CMF_Anodized"
+      ]
+    },
+    "inputs": [
+      {
+        "name": "sweat_test_passed",
+        "unit": "ratio",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      },
+      {
+        "name": "min_sweat_test_grade",
+        "unit": "ratio",
+        "required": true,
+        "source": "Thresholds",
+        "quantity_kind": "absolute"
+      }
+    ],
+    "thresholds": {
+      "sweat_test_passed": {
+        "value": 0,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-CMF-SWEAT-001"
+      },
+      "min_sweat_test_grade": {
+        "value": 1,
+        "unit": "ratio",
+        "source_ref": "EVD-DRAFT-DFMEA-CMF-SWEAT-001"
+      }
+    },
+    "severity": "high",
+    "rationale": "关联失效模式 FM-TWS-CMF-001",
+    "recommendation": "按企业 DFMEA 评分表确认后发布",
+    "evidence_level": "C",
+    "owner": "DQE",
+    "version": "0.1.0",
+    "status": "draft",
+    "notes": "关联失效模式 FM-TWS-CMF-001（web-research 草案）",
+    "expression": "sweat_test_passed >= min_sweat_test_grade",
+    "tests": [
+      {
+        "name": "正常 80%（expr=sweat_test_passed >= min_sweat_test_grad)",
+        "kind": "normal",
+        "inputs": {
+          "sweat_test_passed": 0.8,
+          "min_sweat_test_grade": 0.8
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "边界（恰达阈值）",
+        "kind": "boundary",
+        "inputs": {
+          "sweat_test_passed": 1.0,
+          "min_sweat_test_grade": 1.0
+        },
+        "expected_status": "PASS"
+      },
+      {
+        "name": "异常输入（非数值）",
+        "kind": "invalid",
+        "inputs": {
+          "sweat_test_passed": "not-a-number",
+          "min_sweat_test_grade": "not-a-number"
+        },
+        "expected_status": "ERROR"
+      }
+    ]
+  }
+]

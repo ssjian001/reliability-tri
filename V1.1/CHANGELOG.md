@@ -226,3 +226,13 @@ r3 修复版 V1.1 三件套与附件、rules_draft_60.yaml、benchmarks/、tools
 ### 校验
 pytest 43 passed（g1 33 + g2 契约 + security 4）+ validate_assets PASS（OpenAPI 3.1.0 全契约端点在位）。
 生产化未关闭项（身份 OIDC/多租户/worker queue/PG）见 G2_ACCEPTANCE_REPORT §4——列 G3。
+
+## 16. G2-FMEA（2026-11-23）：TWS耳机与头戴耳机 结构+CMF DFMEA（web-research 草案）
+
+来源：用户指令——用 Parallel MCP 抓 TWS/头戴结构+CMF 数据形成 DFMEA。Parallel MCP 已写入 ZCode 配置（新会话生效；本会话 ERA_NEGOTIATION_FAILED 未通），改用本方搜索管道抓取 4 轮数据。
+
+### 失效模式库（V1.1/failures/failures_tws_head_cmfm.yaml，14 条）
+覆盖 TWS（结构×3、CMF×2、仓盖×2、电池×1）+ 头戴（结构×2、CMF×3）+ 交叉汗液路径×1。每条按 02 §5 全字段（失效链/机理/诱因/局部→上层→最终影响/检测/预防/验证方法/证据等级/限制）。evidence_level=C（web-research 多源一致），升 B 需本厂实测。
+
+### 规则草案（attachments/rules_dfmea_tws_head.json，5 条，schema 0 errors）
+DFMEA-TWS-HALL-001（仓盖霍尔超时休眠策略）、DFMEA-TWS-BATT-001（电池布局膨胀余量）、DFMEA-HEAD-HINGE-001（铰链根部壁厚）、DFMEA-HEAD-EARPAD-001（耳垫耐水解材质）、DFMEA-CMF-SWEAT-001（涂层人工汗液试验等级）。expression 平铺+tests 3 条（normal/boundary/invalid）+source=Thresholds，全过 rule.schema.json。
